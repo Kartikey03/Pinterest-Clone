@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../services/cache_service.dart';
 import '../../domain/entities/photo.dart';
 
 /// Individual pin card in the masonry grid.
@@ -91,104 +92,108 @@ class _PinCardState extends State<PinCard> with SingleTickerProviderStateMixin {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: GestureDetector(
-          onTapDown: _onTapDown,
-          onTapUp: _onTapUp,
-          onTapCancel: _onTapCancel,
-          onTap: _onTap,
-          child: AnimatedScale(
-            scale: _isPressed ? 0.96 : 1.0,
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeInOut,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Image ─────────────────────────────────────────────
-                Hero(
-                  tag: 'pin-image-${widget.photo.id}',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      AppConstants.pinBorderRadius,
-                    ),
-                    child: AspectRatio(
-                      aspectRatio: 1 / widget.photo.aspectRatio,
-                      child: CachedNetworkImage(
-                        imageUrl: widget.photo.thumbnailUrl,
-                        fit: BoxFit.cover,
-                        placeholder:
-                            (context, url) => Shimmer.fromColors(
-                              baseColor:
-                                  isDark
-                                      ? AppColors.shimmerBaseDark
-                                      : AppColors.shimmerBase,
-                              highlightColor:
-                                  isDark
-                                      ? AppColors.shimmerHighlightDark
-                                      : AppColors.shimmerHighlight,
-                              child: Container(
-                                color:
+    return RepaintBoundary(
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: GestureDetector(
+            onTapDown: _onTapDown,
+            onTapUp: _onTapUp,
+            onTapCancel: _onTapCancel,
+            onTap: _onTap,
+            child: AnimatedScale(
+              scale: _isPressed ? 0.96 : 1.0,
+              duration: const Duration(milliseconds: 120),
+              curve: Curves.easeInOut,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Image ─────────────────────────────────────────────
+                  Hero(
+                    tag: 'pin-image-${widget.photo.id}',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.pinBorderRadius,
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 1 / widget.photo.aspectRatio,
+                        child: CachedNetworkImage(
+                          imageUrl: widget.photo.thumbnailUrl,
+                          cacheManager: CacheService.thumbnailCacheManager,
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (context, url) => Shimmer.fromColors(
+                                baseColor:
                                     isDark
                                         ? AppColors.shimmerBaseDark
                                         : AppColors.shimmerBase,
+                                highlightColor:
+                                    isDark
+                                        ? AppColors.shimmerHighlightDark
+                                        : AppColors.shimmerHighlight,
+                                child: Container(
+                                  color:
+                                      isDark
+                                          ? AppColors.shimmerBaseDark
+                                          : AppColors.shimmerBase,
+                                ),
                               ),
-                            ),
-                        errorWidget:
-                            (context, url, error) => Container(
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                color: theme.colorScheme.secondary,
-                                size: 32,
+                          errorWidget:
+                              (context, url, error) => Container(
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  color: theme.colorScheme.secondary,
+                                  size: 32,
+                                ),
                               ),
-                            ),
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-                // ── Photographer Attribution ──────────────────────────
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppSpacing.xs,
-                    right: AppSpacing.xs,
-                    top: AppSpacing.sm,
-                    bottom: AppSpacing.xs,
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 10,
-                        backgroundColor: AppColors.pinterestRed,
-                        child: Text(
-                          widget.photo.photographer.isNotEmpty
-                              ? widget.photo.photographer[0].toUpperCase()
-                              : '?',
-                          style: const TextStyle(
-                            color: AppColors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                  // ── Photographer Attribution ──────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: AppSpacing.xs,
+                      right: AppSpacing.xs,
+                      top: AppSpacing.sm,
+                      bottom: AppSpacing.xs,
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 10,
+                          backgroundColor: AppColors.pinterestRed,
+                          child: Text(
+                            widget.photo.photographer.isNotEmpty
+                                ? widget.photo.photographer[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                              color: AppColors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      AppSpacing.gapW4,
-                      Expanded(
-                        child: Text(
-                          widget.photo.photographer,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w500,
+                        AppSpacing.gapW4,
+                        Expanded(
+                          child: Text(
+                            widget.photo.photographer,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

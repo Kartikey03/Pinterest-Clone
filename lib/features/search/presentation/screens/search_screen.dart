@@ -26,7 +26,8 @@ class SearchScreen extends ConsumerStatefulWidget {
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen>
+    with AutomaticKeepAliveClientMixin {
   final _searchController = TextEditingController();
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
@@ -64,7 +65,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Required by AutomaticKeepAliveClientMixin
     final searchState = ref.watch(searchProvider);
     final theme = Theme.of(context);
 

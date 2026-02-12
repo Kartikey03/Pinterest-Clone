@@ -14,11 +14,13 @@ class ProfileHeader extends StatelessWidget {
     required this.user,
     required this.savedCount,
     required this.boardsCount,
+    this.followingCount = 0,
   });
 
   final AuthUser? user;
   final int savedCount;
   final int boardsCount;
+  final int followingCount;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +81,8 @@ class ProfileHeader extends StatelessWidget {
             _StatItem(count: savedCount, label: 'Saved'),
             AppSpacing.gapW32,
             _StatItem(count: boardsCount, label: 'Boards'),
+            AppSpacing.gapW32,
+            _StatItem(count: followingCount, label: 'Following'),
           ],
         ),
 

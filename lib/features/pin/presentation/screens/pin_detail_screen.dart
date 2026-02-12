@@ -1,13 +1,20 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/animated_heart_button.dart';
+import '../../../../services/cache_service.dart';
 import '../../../home/domain/entities/photo.dart';
+import '../../../home/presentation/widgets/pin_card.dart';
+import '../providers/followed_users_provider.dart';
 import '../providers/saved_pins_provider.dart';
+import '../providers/similar_photos_provider.dart';
 import '../widgets/pin_action_bar.dart';
 
 /// Full-screen pin detail view with hero animation.
@@ -17,6 +24,7 @@ import '../widgets/pin_action_bar.dart';
 /// - Full-width high-res image
 /// - Photographer section with avatar and name
 /// - Description / alt text
+/// - "More like this" section with similar photos
 /// - Action bar at bottom (save, share, visit)
 /// - Transparent app bar overlaying the image
 class PinDetailScreen extends ConsumerWidget {
@@ -29,7 +37,10 @@ class PinDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final savedPins = ref.watch(savedPinsProvider);
-    final isSaved = savedPins.contains(photo.id);
+    final isSaved = savedPins.containsKey(photo.id);
+    final similarPhotos = ref.watch(similarPhotosProvider(photo));
+    final followedUsers = ref.watch(followedUsersProvider);
+    final isFollowing = followedUsers.containsKey(photo.photographerUrl);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -65,7 +76,7 @@ class PinDetailScreen extends ConsumerWidget {
                 isSaved: isSaved,
                 size: 20,
                 onToggle: () {
-                  ref.read(savedPinsProvider.notifier).toggle(photo.id);
+                  ref.read(savedPinsProvider.notifier).toggle(photo.id, photo);
                 },
               ),
             ),
@@ -85,6 +96,7 @@ class PinDetailScreen extends ConsumerWidget {
                     tag: 'pin-image-${photo.id}',
                     child: CachedNetworkImage(
                       imageUrl: photo.imageUrl,
+                      cacheManager: CacheService.fullImageCacheManager,
                       fit: BoxFit.fitWidth,
                       width: double.infinity,
                       placeholder:
@@ -160,17 +172,44 @@ class PinDetailScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        OutlinedButton(
-                          onPressed: () {},
-                          style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                AppSpacing.radiusXl,
+                        isFollowing
+                            ? FilledButton(
+                              onPressed: () {
+                                ref
+                                    .read(followedUsersProvider.notifier)
+                                    .toggle(
+                                      photographerName: photo.photographer,
+                                      photographerUrl: photo.photographerUrl,
+                                    );
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.pinterestRed,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppSpacing.radiusXl,
+                                  ),
+                                ),
                               ),
+                              child: const Text('Following'),
+                            )
+                            : OutlinedButton(
+                              onPressed: () {
+                                ref
+                                    .read(followedUsersProvider.notifier)
+                                    .toggle(
+                                      photographerName: photo.photographer,
+                                      photographerUrl: photo.photographerUrl,
+                                    );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppSpacing.radiusXl,
+                                  ),
+                                ),
+                              ),
+                              child: const Text('Follow'),
                             ),
-                          ),
-                          child: const Text('Follow'),
-                        ),
                       ],
                     ),
                   ),
@@ -203,6 +242,81 @@ class PinDetailScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  ),
+
+                  // ── Divider ────────────────────────────────────────
+                  const Divider(height: 1),
+
+                  // ── "More like this" Section ───────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                    ),
+                    child: Text(
+                      'More like this',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+
+                  // ── Similar Photos Grid ────────────────────────────
+                  similarPhotos.when(
+                    loading:
+                        () => const Padding(
+                          padding: EdgeInsets.all(AppSpacing.xxl),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.pinterestRed,
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        ),
+                    error:
+                        (e, _) => Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Center(
+                            child: Text(
+                              'Could not load similar photos',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.secondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                    data: (photos) {
+                      if (photos.isEmpty) {
+                        return const SizedBox(height: AppSpacing.lg);
+                      }
+                      return Padding(
+                        padding: AppSpacing.paddingAllSm,
+                        child: MasonryGridView.count(
+                          crossAxisCount: AppConstants.masonryColumnCount,
+                          mainAxisSpacing: AppConstants.masonryMainAxisSpacing,
+                          crossAxisSpacing:
+                              AppConstants.masonryCrossAxisSpacing,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: photos.length,
+                          itemBuilder: (context, index) {
+                            final similarPhoto = photos[index];
+                            return PinCard(
+                              photo: similarPhoto,
+                              index: index,
+                              onTap: () {
+                                context.push(
+                                  '/pin/${similarPhoto.id}',
+                                  extra: similarPhoto,
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    },
                   ),
 
                   AppSpacing.gapH32,

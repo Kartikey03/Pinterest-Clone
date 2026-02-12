@@ -26,4 +26,20 @@ class PexelsRemoteDatasource {
 
     return PexelsResponseModel.fromJson(response.data as Map<String, dynamic>);
   }
+
+  /// Search photos by [query] for the given [page].
+  ///
+  /// Used by the "More like this" section in pin detail.
+  Future<PexelsResponseModel> searchPhotos({
+    required String query,
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    final response = await _dio.get(
+      'search',
+      queryParameters: {'query': query, 'page': page, 'per_page': perPage},
+    );
+
+    return PexelsResponseModel.fromJson(response.data as Map<String, dynamic>);
+  }
 }

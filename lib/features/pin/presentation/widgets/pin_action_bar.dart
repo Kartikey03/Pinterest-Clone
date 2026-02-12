@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -23,7 +24,7 @@ class PinActionBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final savedPins = ref.watch(savedPinsProvider);
-    final isSaved = savedPins.contains(photo.id);
+    final isSaved = savedPins.containsKey(photo.id);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -44,7 +45,7 @@ class PinActionBar extends ConsumerWidget {
             GestureDetector(
               onTap: () {
                 HapticFeedback.mediumImpact();
-                ref.read(savedPinsProvider.notifier).toggle(photo.id);
+                ref.read(savedPinsProvider.notifier).toggle(photo.id, photo);
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -58,7 +59,9 @@ class PinActionBar extends ConsumerWidget {
                       isSaved: isSaved,
                       size: 22,
                       onToggle: () {
-                        ref.read(savedPinsProvider.notifier).toggle(photo.id);
+                        ref
+                            .read(savedPinsProvider.notifier)
+                            .toggle(photo.id, photo);
                       },
                     ),
                     AppSpacing.gapW4,
@@ -81,12 +84,10 @@ class PinActionBar extends ConsumerWidget {
               icon: Icons.share_outlined,
               label: 'Share',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Share coming soon'),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
+                final text =
+                    '\u{1F4CC} Check out this photo by ${photo.photographer}!\n'
+                    '${photo.photographerUrl}';
+                Share.share(text);
               },
             ),
 

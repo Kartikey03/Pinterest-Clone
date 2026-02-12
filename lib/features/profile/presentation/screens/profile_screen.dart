@@ -1,10 +1,16 @@
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../home/domain/entities/photo.dart';
+import '../../../home/presentation/widgets/pin_card.dart';
+import '../../../pin/presentation/providers/followed_users_provider.dart';
 import '../../../pin/presentation/providers/saved_pins_provider.dart';
 import '../providers/boards_provider.dart';
 import '../widgets/boards_grid.dart';
@@ -32,7 +38,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -58,6 +64,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final user = ref.watch(authNotifierProvider);
     final savedPins = ref.watch(savedPinsProvider);
     final boards = ref.watch(boardsProvider);
+    final followedUsers = ref.watch(followedUsersProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -102,6 +109,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   user: user,
                   savedCount: savedPins.length,
                   boardsCount: boards.length,
+                  followingCount: followedUsers.length,
                 ),
               ),
 
@@ -117,7 +125,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     labelStyle: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
-                    tabs: const [Tab(text: 'Saved'), Tab(text: 'Boards')],
+                    tabs: const [
+                      Tab(text: 'Saved'),
+                      Tab(text: 'Boards'),
+                      Tab(text: 'Following'),
+                    ],
                   ),
                   backgroundColor: theme.scaffoldBackgroundColor,
                 ),
@@ -136,13 +148,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 onCreateBoard: () => _showCreateBoardDialog(context),
               ),
             ),
+
+            // ── Following Tab ─────────────────────────────────────
+            _buildFollowingTab(followedUsers),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSavedTab(Set<int> savedPins) {
+  Widget _buildSavedTab(Map<int, Photo> savedPins) {
     if (savedPins.isEmpty) {
       return Center(
         child: Column(
@@ -172,31 +187,104 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       );
     }
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.favorite,
-            size: 64,
-            color: AppColors.pinterestRed.withValues(alpha: 0.5),
-          ),
-          AppSpacing.gapH16,
-          Text(
-            '${savedPins.length} pin${savedPins.length == 1 ? '' : 's'} saved',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          AppSpacing.gapH8,
-          Text(
-            'Your saved pins will appear here',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.secondary,
+    final photos = savedPins.values.toList().reversed.toList();
+
+    return Padding(
+      padding: AppSpacing.paddingAllSm,
+      child: MasonryGridView.count(
+        crossAxisCount: AppConstants.masonryColumnCount,
+        mainAxisSpacing: AppConstants.masonryMainAxisSpacing,
+        crossAxisSpacing: AppConstants.masonryCrossAxisSpacing,
+        itemCount: photos.length,
+        itemBuilder: (context, index) {
+          final photo = photos[index];
+          return PinCard(
+            photo: photo,
+            index: index,
+            onTap: () {
+              context.push('/pin/${photo.id}', extra: photo);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFollowingTab(Map<String, FollowedUser> followedUsers) {
+    if (followedUsers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.person_add_outlined,
+              size: 64,
+              color: AppColors.pinterestRed.withValues(alpha: 0.3),
+            ),
+            AppSpacing.gapH16,
+            Text(
+              'Not following anyone yet',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            AppSpacing.gapH8,
+            Text(
+              'Follow photographers to see them here',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final users = followedUsers.values.toList();
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      itemCount: users.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final user = users[index];
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor: AppColors.pinterestRed,
+            child: Text(
+              user.avatarInitial,
+              style: const TextStyle(
+                color: AppColors.white,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
-        ],
-      ),
+          title: Text(
+            user.photographerName,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          subtitle: const Text('Photographer'),
+          trailing: FilledButton(
+            onPressed: () {
+              ref
+                  .read(followedUsersProvider.notifier)
+                  .toggle(
+                    photographerName: user.photographerName,
+                    photographerUrl: user.photographerUrl,
+                  );
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.pinterestRed,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+              ),
+            ),
+            child: const Text('Following'),
+          ),
+        );
+      },
     );
   }
 
