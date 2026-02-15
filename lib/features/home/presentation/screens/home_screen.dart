@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../providers/home_feed_provider.dart';
 import '../widgets/pin_card.dart';
+import '../widgets/pinterest_refresh_indicator.dart';
 import '../widgets/shimmer_grid.dart';
 
 /// Pinterest-style home feed with masonry grid.
@@ -78,7 +79,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.push_pin, color: AppColors.pinterestRed, size: 28),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.asset(
+              'assets/images/pinterest_logo.jpg',
+              width: 30,
+              height: 30,
+              fit: BoxFit.cover,
+            ),
+          ),
           AppSpacing.gapW8,
           Text(
             'Pinterest',
@@ -139,11 +148,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return const Center(child: Text('No photos found'));
     }
 
-    return RefreshIndicator(
-      color: AppColors.pinterestRed,
+    return PinterestRefreshIndicator(
       onRefresh: () => ref.read(homeFeedProvider.notifier).refresh(),
+      scrollController: _scrollController,
       child: CustomScrollView(
         controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
         cacheExtent: 500, // Pre-render offscreen items for smooth scrolling
         slivers: [
           // ── Masonry Grid ─────────────────────────────────────────

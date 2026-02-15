@@ -6,6 +6,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/home/domain/entities/photo.dart';
 import '../../features/home/presentation/screens/main_shell.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/inbox/presentation/screens/inbox_screen.dart';
 import '../../features/pin/presentation/screens/pin_detail_screen.dart';
 import '../../features/search/presentation/screens/search_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -25,6 +26,7 @@ abstract final class AppRouter {
   static const String login = 'login';
   static const String home = 'home';
   static const String search = 'search';
+  static const String inbox = 'inbox';
   static const String profile = 'profile';
   static const String pinDetail = 'pin-detail';
 
@@ -33,6 +35,7 @@ abstract final class AppRouter {
   static const String loginPath = '/login';
   static const String homePath = '/';
   static const String searchPath = '/search';
+  static const String inboxPath = '/inbox';
   static const String profilePath = '/profile';
   static const String pinDetailPath = '/pin/:id';
 
@@ -133,6 +136,13 @@ abstract final class AppRouter {
             pageBuilder:
                 (context, state) =>
                     const NoTransitionPage(child: SearchScreen()),
+          ),
+          GoRoute(
+            path: inboxPath,
+            name: inbox,
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: InboxScreen()),
           ),
           GoRoute(
             path: profilePath,

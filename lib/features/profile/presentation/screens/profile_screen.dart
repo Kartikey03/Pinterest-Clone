@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme_provider.dart';
+
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -82,10 +84,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             onSelected: (value) {
               if (value == 'signout') {
                 _signOut(context);
+              } else if (value == 'theme') {
+                ref.read(themeModeProvider.notifier).toggleTheme();
               }
             },
             itemBuilder:
                 (context) => [
+                  PopupMenuItem(
+                    value: 'theme',
+                    child: Row(
+                      children: [
+                        Icon(
+                          ref.read(themeModeProvider.notifier).isDark
+                              ? Icons.light_mode
+                              : Icons.dark_mode,
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          ref.read(themeModeProvider.notifier).isDark
+                              ? 'Light mode'
+                              : 'Dark mode',
+                        ),
+                      ],
+                    ),
+                  ),
                   const PopupMenuItem(
                     value: 'signout',
                     child: Row(

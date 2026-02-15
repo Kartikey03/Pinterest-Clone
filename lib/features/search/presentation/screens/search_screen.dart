@@ -10,15 +10,18 @@ import '../../../home/presentation/widgets/pin_card.dart';
 import '../../../home/presentation/widgets/shimmer_grid.dart';
 import '../providers/search_provider.dart';
 import '../widgets/category_chips.dart';
+import '../widgets/trending_carousel.dart';
+import '../widgets/featured_boards.dart';
 
 /// Pinterest-style search screen.
 ///
-/// Features replicated:
-/// - Rounded search bar at top (Pinterest's signature pill shape)
-/// - Category suggestion chips when search is empty
+/// Features replicated from the real Pinterest app:
+/// - Rounded search bar at top with camera icon
+/// - Trending carousel when search is empty
+/// - "Ideas you might like" featured boards section
+/// - Category suggestion chips
 /// - Debounced search results in masonry grid
 /// - Infinite scroll on search results
-/// - Clear button and back navigation
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -101,7 +104,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                             },
                             icon: const Icon(Icons.close, size: 20),
                           )
-                          : null,
+                          : IconButton(
+                            onPressed: () {
+                              // Camera search placeholder
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Visual search coming soon!'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.camera_alt_outlined,
+                              size: 22,
+                            ),
+                          ),
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest,
                   border: OutlineInputBorder(
@@ -125,10 +142,28 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildContent(SearchState state) {
-    // Empty query → show categories
+    // Empty query → show discovery content
     if (state.query.isEmpty) {
       return SingleChildScrollView(
-        child: CategoryChips(onCategoryTap: _onCategoryTap),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Trending Carousel ────────────────────────────────────
+            const TrendingCarousel(),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            // ── Featured Boards ──────────────────────────────────────
+            const FeaturedBoards(),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            // ── Category Chips ───────────────────────────────────────
+            CategoryChips(onCategoryTap: _onCategoryTap),
+
+            const SizedBox(height: AppSpacing.xxxxl),
+          ],
+        ),
       );
     }
 

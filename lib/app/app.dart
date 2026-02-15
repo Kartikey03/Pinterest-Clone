@@ -1,21 +1,24 @@
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/router/app_router.dart';
 import '../core/theme/app_theme.dart';
+import 'theme_provider.dart';
 
 /// Root application widget.
 ///
 /// Wraps the entire app with [ClerkAuth] for session management.
 /// [ClerkErrorListener] catches and displays auth errors.
 /// [MaterialApp.router] provides GoRouter navigation + Pinterest theme.
-class PinterestApp extends StatelessWidget {
+class PinterestApp extends ConsumerWidget {
   const PinterestApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final publishableKey = dotenv.env['CLERK_PUBLISHABLE_KEY'] ?? '';
+    final themeMode = ref.watch(themeModeProvider);
 
     return ClerkAuth(
       config: ClerkAuthConfig(publishableKey: publishableKey),
@@ -26,7 +29,7 @@ class PinterestApp extends StatelessWidget {
         // Theme
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.light,
+        themeMode: themeMode,
 
         // Routing
         routerConfig: AppRouter.router,
