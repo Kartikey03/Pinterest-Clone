@@ -9,8 +9,11 @@ import '../../../../core/theme/app_spacing.dart';
 /// Matches Pinterest's search page layout: a section header
 /// with horizontally scrollable board cards containing
 /// a grid of images, a board title, and metadata.
+/// Tapping a board triggers [onBoardTap] to search for that topic.
 class FeaturedBoards extends StatelessWidget {
-  const FeaturedBoards({super.key});
+  const FeaturedBoards({super.key, this.onBoardTap});
+
+  final void Function(String boardTitle)? onBoardTap;
 
   static const _boards = [
     _BoardData(
@@ -98,7 +101,10 @@ class FeaturedBoards extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md),
             itemBuilder: (context, index) {
               final board = _boards[index];
-              return _BoardCard(board: board);
+              return _BoardCard(
+                board: board,
+                onTap: () => onBoardTap?.call(board.title),
+              );
             },
           ),
         ),
@@ -122,146 +128,150 @@ class _BoardData {
 }
 
 class _BoardCard extends StatelessWidget {
-  const _BoardCard({required this.board});
+  const _BoardCard({required this.board, this.onTap});
 
   final _BoardData board;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return SizedBox(
-      width: 180,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Image Collage ──────────────────────────────────────────
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              child: Row(
-                children: [
-                  // Main large image
-                  Expanded(
-                    flex: 2,
-                    child: CachedNetworkImage(
-                      imageUrl: board.images[0],
-                      fit: BoxFit.cover,
-                      height: double.infinity,
-                      placeholder:
-                          (_, __) => Container(
-                            color:
-                                isDark
-                                    ? AppColors.shimmerBaseDark
-                                    : AppColors.shimmerBase,
-                          ),
-                      errorWidget:
-                          (_, __, ___) => Container(
-                            color:
-                                isDark
-                                    ? AppColors.shimmerBaseDark
-                                    : AppColors.shimmerBase,
-                          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 180,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Image Collage ──────────────────────────────────────────
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                child: Row(
+                  children: [
+                    // Main large image
+                    Expanded(
+                      flex: 2,
+                      child: CachedNetworkImage(
+                        imageUrl: board.images[0],
+                        fit: BoxFit.cover,
+                        height: double.infinity,
+                        placeholder:
+                            (_, __) => Container(
+                              color:
+                                  isDark
+                                      ? AppColors.shimmerBaseDark
+                                      : AppColors.shimmerBase,
+                            ),
+                        errorWidget:
+                            (_, __, ___) => Container(
+                              color:
+                                  isDark
+                                      ? AppColors.shimmerBaseDark
+                                      : AppColors.shimmerBase,
+                            ),
+                      ),
                     ),
+                    const SizedBox(width: 2),
+                    // Two stacked smaller images
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: CachedNetworkImage(
+                              imageUrl: board.images[1],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              placeholder:
+                                  (_, __) => Container(
+                                    color:
+                                        isDark
+                                            ? AppColors.shimmerBaseDark
+                                            : AppColors.shimmerBase,
+                                  ),
+                              errorWidget:
+                                  (_, __, ___) => Container(
+                                    color:
+                                        isDark
+                                            ? AppColors.shimmerBaseDark
+                                            : AppColors.shimmerBase,
+                                  ),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Expanded(
+                            child: CachedNetworkImage(
+                              imageUrl: board.images[2],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              placeholder:
+                                  (_, __) => Container(
+                                    color:
+                                        isDark
+                                            ? AppColors.shimmerBaseDark
+                                            : AppColors.shimmerBase,
+                                  ),
+                              errorWidget:
+                                  (_, __, ___) => Container(
+                                    color:
+                                        isDark
+                                            ? AppColors.shimmerBaseDark
+                                            : AppColors.shimmerBase,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Board Info ─────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    board.title,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 2),
-                  // Two stacked smaller images
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: CachedNetworkImage(
-                            imageUrl: board.images[1],
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            placeholder:
-                                (_, __) => Container(
-                                  color:
-                                      isDark
-                                          ? AppColors.shimmerBaseDark
-                                          : AppColors.shimmerBase,
-                                ),
-                            errorWidget:
-                                (_, __, ___) => Container(
-                                  color:
-                                      isDark
-                                          ? AppColors.shimmerBaseDark
-                                          : AppColors.shimmerBase,
-                                ),
-                          ),
+                  const SizedBox(height: 1),
+                  Row(
+                    children: [
+                      Text(
+                        board.source,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.secondary,
                         ),
-                        const SizedBox(height: 2),
-                        Expanded(
-                          child: CachedNetworkImage(
-                            imageUrl: board.images[2],
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            placeholder:
-                                (_, __) => Container(
-                                  color:
-                                      isDark
-                                          ? AppColors.shimmerBaseDark
-                                          : AppColors.shimmerBase,
-                                ),
-                            errorWidget:
-                                (_, __, ___) => Container(
-                                  color:
-                                      isDark
-                                          ? AppColors.shimmerBaseDark
-                                          : AppColors.shimmerBase,
-                                ),
-                          ),
-                        ),
-                      ],
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.verified,
+                        size: 12,
+                        color: AppColors.pinterestRed,
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '${board.pinCount} Pins',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.secondary,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-
-          // ── Board Info ─────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.xs),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  board.title,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 1),
-                Row(
-                  children: [
-                    Text(
-                      board.source,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.secondary,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.verified,
-                      size: 12,
-                      color: AppColors.pinterestRed,
-                    ),
-                  ],
-                ),
-                Text(
-                  '${board.pinCount} Pins',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.secondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

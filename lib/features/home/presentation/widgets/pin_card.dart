@@ -1,25 +1,27 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_spacing.dart';
 import '../../../../services/cache_service.dart';
 import '../../domain/entities/photo.dart';
+import '../../../pin/presentation/providers/saved_pins_provider.dart';
 
 /// Individual pin card in the masonry grid.
 ///
 /// Pinterest UX details replicated:
 /// - Rounded corners (16px)
 /// - CachedNetworkImage with shimmer placeholder
-/// - Photographer name overlay at bottom
+/// - Three-dot menu below image (no artist name, like real Pinterest)
 /// - Aspect-ratio-aware height (natural photo proportions)
 /// - **Scale-down press effect** (0.96x on tap, Pinterest signature)
 /// - **Staggered fade-in** when appearing in the grid
 /// - **Haptic feedback** on tap
-class PinCard extends StatefulWidget {
+class PinCard extends ConsumerStatefulWidget {
   const PinCard({super.key, required this.photo, this.onTap, this.index = 0});
 
   final Photo photo;
@@ -27,10 +29,11 @@ class PinCard extends StatefulWidget {
   final int index;
 
   @override
-  State<PinCard> createState() => _PinCardState();
+  ConsumerState<PinCard> createState() => _PinCardState();
 }
 
-class _PinCardState extends State<PinCard> with SingleTickerProviderStateMixin {
+class _PinCardState extends ConsumerState<PinCard>
+    with SingleTickerProviderStateMixin {
   // ── Press animation ──────────────────────────────────────────────
   bool _isPressed = false;
 
@@ -87,6 +90,107 @@ class _PinCardState extends State<PinCard> with SingleTickerProviderStateMixin {
     widget.onTap?.call();
   }
 
+  void _showOptionsSheet(BuildContext context) {
+    final theme = Theme.of(context);
+    final photo = widget.photo;
+    final savedPins = ref.read(savedPinsProvider);
+    final isSaved = savedPins.containsKey(photo.id);
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.outline,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Download
+                ListTile(
+                  leading: const Icon(Icons.download_outlined),
+                  title: const Text('Download image'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Image download started'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
+
+                // Share
+                ListTile(
+                  leading: const Icon(Icons.share_outlined),
+                  title: const Text('Share'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    final text =
+                        '📌 Check out this photo by ${photo.photographer}!\n'
+                        '${photo.photographerUrl}';
+                    Share.share(text);
+                  },
+                ),
+
+                // Save / Unsave
+                ListTile(
+                  leading: Icon(
+                    isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  ),
+                  title: Text(isSaved ? 'Unsave' : 'Save'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ref
+                        .read(savedPinsProvider.notifier)
+                        .toggle(photo.id, photo);
+                  },
+                ),
+
+                // See less like this
+                ListTile(
+                  leading: const Icon(Icons.visibility_off_outlined),
+                  title: const Text('See less like this'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("We'll show less like this"),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
+
+                // Report pin
+                ListTile(
+                  leading: const Icon(Icons.flag_outlined),
+                  title: const Text('Report Pin'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                  },
+                ),
+
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -97,20 +201,20 @@ class _PinCardState extends State<PinCard> with SingleTickerProviderStateMixin {
         opacity: _fadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
-          child: GestureDetector(
-            onTapDown: _onTapDown,
-            onTapUp: _onTapUp,
-            onTapCancel: _onTapCancel,
-            onTap: _onTap,
-            child: AnimatedScale(
-              scale: _isPressed ? 0.96 : 1.0,
-              duration: const Duration(milliseconds: 120),
-              curve: Curves.easeInOut,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Image ─────────────────────────────────────────────
-                  Hero(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Image (tappable) ────────────────────────────────────
+              GestureDetector(
+                onTapDown: _onTapDown,
+                onTapUp: _onTapUp,
+                onTapCancel: _onTapCancel,
+                onTap: _onTap,
+                child: AnimatedScale(
+                  scale: _isPressed ? 0.96 : 1.0,
+                  duration: const Duration(milliseconds: 120),
+                  curve: Curves.easeInOut,
+                  child: Hero(
                     tag: 'pin-image-${widget.photo.id}',
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(
@@ -153,48 +257,27 @@ class _PinCardState extends State<PinCard> with SingleTickerProviderStateMixin {
                       ),
                     ),
                   ),
+                ),
+              ),
 
-                  // ── Photographer Attribution ──────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: AppSpacing.xs,
-                      right: AppSpacing.xs,
-                      top: AppSpacing.sm,
-                      bottom: AppSpacing.xs,
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 10,
-                          backgroundColor: AppColors.pinterestRed,
-                          child: Text(
-                            widget.photo.photographer.isNotEmpty
-                                ? widget.photo.photographer[0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        AppSpacing.gapW4,
-                        Expanded(
-                          child: Text(
-                            widget.photo.photographer,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+              // ── Three-dot menu (like real Pinterest) ─────────────────
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  height: 28,
+                  width: 28,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    iconSize: 18,
+                    onPressed: () => _showOptionsSheet(context),
+                    icon: Icon(
+                      Icons.more_horiz,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

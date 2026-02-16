@@ -5,10 +5,9 @@ import '../../../../core/router/app_router.dart';
 
 /// Root scaffold with bottom navigation bar.
 ///
-/// Wraps the [ShellRoute] child and manages tab selection.
-/// 5 tabs: Home, Search, Create (+), Inbox, Profile.
-/// Using separate navigator keys preserves scroll position
-/// when switching tabs — a key Pinterest UX detail.
+/// 5 tabs matching the real Pinterest app:
+/// Home, Search, Create (+), Messages, Profile.
+/// Labels are hidden — icon-only nav bar like the real app.
 class MainShell extends StatelessWidget {
   const MainShell({super.key, required this.child});
 
@@ -95,6 +94,7 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentIndex = _currentIndex(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
       body: child,
@@ -102,7 +102,7 @@ class MainShell extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Theme.of(context).colorScheme.outline,
+              color: theme.colorScheme.outline.withValues(alpha: 0.2),
               width: 0.5,
             ),
           ),
@@ -110,31 +110,43 @@ class MainShell extends StatelessWidget {
         child: BottomNavigationBar(
           currentIndex: currentIndex,
           onTap: (index) => _onTap(context, index),
+          type: BottomNavigationBarType.fixed,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          selectedItemColor: theme.colorScheme.onSurface,
+          unselectedItemColor: theme.colorScheme.onSurface.withValues(
+            alpha: 0.5,
+          ),
           items: const [
+            // Home — filled rounded house
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search_outlined),
-              activeIcon: Icon(Icons.search),
-              label: 'Search',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add, size: 32),
-              activeIcon: Icon(Icons.add, size: 32),
+              icon: Icon(Icons.home_outlined, size: 28),
+              activeIcon: Icon(Icons.home_filled, size: 28),
               label: '',
             ),
+            // Search — magnifying glass
             BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
-              activeIcon: Icon(Icons.chat_bubble),
-              label: 'Inbox',
+              icon: Icon(Icons.search, size: 28),
+              activeIcon: Icon(Icons.search, size: 28),
+              label: '',
             ),
+            // Create — simple plus
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
+              icon: Icon(Icons.add, size: 30),
+              activeIcon: Icon(Icons.add, size: 30),
+              label: '',
+            ),
+            // Messages — speech bubble
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline, size: 26),
+              activeIcon: Icon(Icons.chat_bubble, size: 26),
+              label: '',
+            ),
+            // Profile — person silhouette
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline, size: 28),
+              activeIcon: Icon(Icons.person, size: 28),
+              label: '',
             ),
           ],
         ),

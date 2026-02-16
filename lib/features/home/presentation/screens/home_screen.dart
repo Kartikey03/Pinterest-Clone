@@ -6,19 +6,19 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../home/domain/entities/photo.dart';
+import '../../../pin/presentation/providers/saved_pins_provider.dart';
 import '../providers/home_feed_provider.dart';
 import '../widgets/pin_card.dart';
 import '../widgets/pinterest_refresh_indicator.dart';
 import '../widgets/shimmer_grid.dart';
 
-/// Pinterest-style home feed with masonry grid.
+/// Pinterest-style home feed with "For You" + saved board tabs.
 ///
-/// Features replicated from the real Pinterest app:
-/// - Staggered masonry grid (2 columns)
-/// - Infinite scroll (loads next page at 80% threshold)
-/// - Pull-to-refresh (resets to page 1)
-/// - Shimmer loading skeleton
-/// - Scroll performance tuning (cacheExtent, keepAlives off)
+/// Matches the real Pinterest home screen layout:
+/// - Top: tab row with "For you" + saved board names
+/// - Filter icon at top right
+/// - Masonry grid feed with pull-to-refresh
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -26,9 +26,9 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with AutomaticKeepAliveClientMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _scrollController = ScrollController();
+  int _activeTabIndex = 0;
 
   @override
   void initState() {
@@ -43,99 +43,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     super.dispose();
   }
 
-  /// Trigger next page load when scrolled to 80% of the list.
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    final threshold = maxScroll * 0.8;
-
-    if (currentScroll >= threshold) {
+    if (currentScroll >= maxScroll * 0.8) {
       ref.read(homeFeedProvider.notifier).loadNextPage();
     }
   }
 
   @override
-  bool get wantKeepAlive => true;
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context); // Required by AutomaticKeepAliveClientMixin
     final feedState = ref.watch(homeFeedProvider);
+    final savedPins = ref.watch(savedPinsProvider);
+    final boardNames = _getBoardNames(savedPins);
 
     return Scaffold(
-      appBar: _buildAppBar(context),
-      body: feedState.when(
-        loading: () => const ShimmerGrid(),
-        error: (error, _) => _buildErrorState(context, error),
-        data: (state) => _buildFeed(context, state),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Image.asset(
-              'assets/images/pinterest_logo.jpg',
-              width: 30,
-              height: 30,
-              fit: BoxFit.cover,
-            ),
-          ),
-          AppSpacing.gapW8,
-          Text(
-            'Pinterest',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorState(BuildContext context, Object error) {
-    return Center(
-      child: Padding(
-        padding: AppSpacing.paddingAllXxl,
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.cloud_off_rounded,
-              size: 64,
-              color: AppColors.pinterestRed.withValues(alpha: 0.4),
-            ),
-            AppSpacing.gapH16,
-            Text(
-              'Something went wrong',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            AppSpacing.gapH8,
-            Text(
-              'Check your internet connection\nand try again',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            AppSpacing.gapH24,
-            FilledButton.icon(
-              onPressed:
-                  () => ref.read(homeFeedProvider.notifier).loadInitial(),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.pinterestRed,
-              ),
+            // ── Tab Row ────────────────────────────────────────────────
+            _buildTabRow(context, boardNames),
+
+            // ── Feed Content ───────────────────────────────────────────
+            Expanded(
+              child:
+                  _activeTabIndex == 0
+                      ? feedState.when(
+                        data: (state) => _buildForYouFeed(state),
+                        loading: () => const ShimmerGrid(),
+                        error: (error, _) => _buildErrorView(),
+                      )
+                      : _buildBoardFeed(savedPins),
             ),
           ],
         ),
@@ -143,8 +82,109 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildFeed(BuildContext context, HomeFeedState state) {
-    if (state.isEmpty) {
+  /// Get unique board names from saved pins.
+  List<String> _getBoardNames(Map<int, Photo> savedPins) {
+    if (savedPins.isEmpty) return [];
+    final pins = savedPins.values.toList();
+    final names = <String>{};
+    for (final pin in pins) {
+      if (pin.alt.isNotEmpty) {
+        final words = pin.alt.split(' ');
+        final name = words.take(2).join(' ');
+        if (name.isNotEmpty) names.add(name);
+      }
+    }
+    return names.take(3).toList();
+  }
+
+  Widget _buildTabRow(BuildContext context, List<String> boardNames) {
+    final theme = Theme.of(context);
+    final tabs = ['For you', ...boardNames];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      child: Row(
+        children: [
+          // Tab chips
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: List.generate(tabs.length, (index) {
+                  final isActive = _activeTabIndex == index;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.md),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _activeTabIndex = index),
+                      child: Text(
+                        tabs[index],
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight:
+                              isActive ? FontWeight.w800 : FontWeight.w500,
+                          color:
+                              isActive
+                                  ? theme.colorScheme.onSurface
+                                  : theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+
+          // Filter icon (like Pinterest's tune icon)
+          IconButton(
+            onPressed: () {},
+            icon: Icon(
+              Icons.tune,
+              color: theme.colorScheme.onSurface,
+              size: 22,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.cloud_off_rounded,
+            size: 64,
+            color: AppColors.pinterestRed.withValues(alpha: 0.4),
+          ),
+          AppSpacing.gapH16,
+          Text(
+            'Something went wrong',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          AppSpacing.gapH16,
+          FilledButton.icon(
+            onPressed: () => ref.read(homeFeedProvider.notifier).refresh(),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try again'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.pinterestRed,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildForYouFeed(HomeFeedState state) {
+    if (state.photos.isEmpty) {
       return const Center(child: Text('No photos found'));
     }
 
@@ -156,9 +196,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
-        cacheExtent: 500, // Pre-render offscreen items for smooth scrolling
+        cacheExtent: 500,
         slivers: [
-          // ── Masonry Grid ─────────────────────────────────────────
           SliverPadding(
             padding: AppSpacing.paddingAllSm,
             sliver: SliverMasonryGrid.count(
@@ -178,8 +217,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               },
             ),
           ),
-
-          // ── Loading Indicator (infinite scroll) ──────────────────
           if (state.isLoadingMore)
             const SliverToBoxAdapter(
               child: Padding(
@@ -192,11 +229,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
               ),
             ),
-
-          // ── Bottom Padding ──────────────────────────────────────
           const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxxl)),
         ],
       ),
+    );
+  }
+
+  Widget _buildBoardFeed(Map<int, Photo> savedPins) {
+    final photos = savedPins.values.toList().reversed.toList();
+
+    if (photos.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.bookmark_border,
+              size: 64,
+              color: AppColors.pinterestRed.withValues(alpha: 0.3),
+            ),
+            AppSpacing.gapH16,
+            Text(
+              'No saved pins yet',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return CustomScrollView(
+      cacheExtent: 500,
+      slivers: [
+        SliverPadding(
+          padding: AppSpacing.paddingAllSm,
+          sliver: SliverMasonryGrid.count(
+            crossAxisCount: AppConstants.masonryColumnCount,
+            mainAxisSpacing: AppConstants.masonryMainAxisSpacing,
+            crossAxisSpacing: AppConstants.masonryCrossAxisSpacing,
+            childCount: photos.length,
+            itemBuilder: (context, index) {
+              final photo = photos[index];
+              return PinCard(
+                photo: photo,
+                index: index,
+                onTap: () {
+                  context.push('/pin/${photo.id}', extra: photo);
+                },
+              );
+            },
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxxl)),
+      ],
     );
   }
 }

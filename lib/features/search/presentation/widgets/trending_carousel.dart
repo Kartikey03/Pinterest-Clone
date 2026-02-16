@@ -8,8 +8,11 @@ import '../../../../core/theme/app_spacing.dart';
 ///
 /// Shows a horizontally-swipeable PageView of trending topic images
 /// with "Trending now" label and topic title overlaid at the bottom.
+/// Tapping a topic triggers [onTopicTap] to search for that topic.
 class TrendingCarousel extends StatefulWidget {
-  const TrendingCarousel({super.key});
+  const TrendingCarousel({super.key, this.onTopicTap});
+
+  final void Function(String topic)? onTopicTap;
 
   @override
   State<TrendingCarousel> createState() => _TrendingCarouselState();
@@ -19,7 +22,6 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
   final _pageController = PageController(viewportFraction: 0.95);
   int _currentPage = 0;
 
-  // Mock trending topics — using Pexels sample images
   static const _trendingTopics = [
     _TrendingItem(
       title: 'Aesthetic Wallpapers',
@@ -67,69 +69,73 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
             itemCount: _trendingTopics.length,
             itemBuilder: (context, index) {
               final item = _trendingTopics[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: item.imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder:
-                            (_, __) => Container(color: AppColors.shimmerBase),
-                        errorWidget:
-                            (_, __, ___) => Container(
-                              color: AppColors.shimmerBase,
-                              child: const Icon(Icons.image_not_supported),
+              return GestureDetector(
+                onTap: () => widget.onTopicTap?.call(item.title),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: item.imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (_, __) =>
+                                  Container(color: AppColors.shimmerBase),
+                          errorWidget:
+                              (_, __, ___) => Container(
+                                color: AppColors.shimmerBase,
+                                child: const Icon(Icons.image_not_supported),
+                              ),
+                        ),
+                        // Gradient overlay
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.7),
+                              ],
+                              stops: const [0.4, 1.0],
                             ),
-                      ),
-                      // Gradient overlay
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.7),
-                            ],
-                            stops: const [0.4, 1.0],
                           ),
                         ),
-                      ),
-                      // Text overlay
-                      Positioned(
-                        left: AppSpacing.lg,
-                        bottom: AppSpacing.lg,
-                        right: AppSpacing.lg,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Trending now',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.labelMedium?.copyWith(
-                                color: AppColors.white.withValues(alpha: 0.8),
-                                fontWeight: FontWeight.w500,
+                        // Text overlay
+                        Positioned(
+                          left: AppSpacing.lg,
+                          bottom: AppSpacing.lg,
+                          right: AppSpacing.lg,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Trending now',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.labelMedium?.copyWith(
+                                  color: AppColors.white.withValues(alpha: 0.8),
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item.title,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.headlineSmall?.copyWith(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.w800,
+                              const SizedBox(height: 4),
+                              Text(
+                                item.title,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall?.copyWith(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

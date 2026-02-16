@@ -149,12 +149,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Trending Carousel ────────────────────────────────────
-            const TrendingCarousel(),
+            TrendingCarousel(onTopicTap: _onCategoryTap),
 
             const SizedBox(height: AppSpacing.lg),
 
             // ── Featured Boards ──────────────────────────────────────
-            const FeaturedBoards(),
+            FeaturedBoards(onBoardTap: _onCategoryTap),
 
             const SizedBox(height: AppSpacing.lg),
 

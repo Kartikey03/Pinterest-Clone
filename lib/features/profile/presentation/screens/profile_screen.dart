@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +7,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme_provider.dart';
-
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -15,6 +16,7 @@ import '../../../home/presentation/widgets/pin_card.dart';
 import '../../../pin/presentation/providers/followed_users_provider.dart';
 import '../../../pin/presentation/providers/saved_pins_provider.dart';
 import '../providers/boards_provider.dart';
+import '../providers/uploaded_pins_provider.dart';
 import '../widgets/boards_grid.dart';
 import '../widgets/profile_header.dart';
 
@@ -22,9 +24,10 @@ import '../widgets/profile_header.dart';
 ///
 /// Features replicated:
 /// - Centered profile header with avatar and stats
-/// - Tab bar: "Saved" pins and "Boards"
+/// - Tab bar: Saved, Boards, Following, Uploads
 /// - Create board dialog
 /// - Settings gear icon in app bar
+/// - Dark/light theme toggle
 /// - Sign out option
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -40,14 +43,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() => setState(() {}));
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Schedule auth sync after the current frame to avoid
-    // modifying provider state during the widget tree build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(authNotifierProvider.notifier).updateFromClerk(context);
@@ -67,6 +69,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final savedPins = ref.watch(savedPinsProvider);
     final boards = ref.watch(boardsProvider);
     final followedUsers = ref.watch(followedUsersProvider);
+    final uploadedPins = ref.watch(uploadedPinsProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -78,7 +81,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
         ),
         actions: [
-          // Settings / Sign out menu
           PopupMenuButton<String>(
             icon: const Icon(Icons.settings_outlined),
             onSelected: (value) {
@@ -152,6 +154,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       Tab(text: 'Saved'),
                       Tab(text: 'Boards'),
                       Tab(text: 'Following'),
+                      Tab(text: 'Uploads'),
                     ],
                   ),
                   backgroundColor: theme.scaffoldBackgroundColor,
@@ -161,25 +164,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         body: TabBarView(
           controller: _tabController,
           children: [
-            // ── Saved Tab ─────────────────────────────────────────
             _buildSavedTab(savedPins),
-
-            // ── Boards Tab ────────────────────────────────────────
             SingleChildScrollView(
               child: BoardsGrid(
                 boards: boards,
                 onCreateBoard: () => _showCreateBoardDialog(context),
               ),
             ),
-
-            // ── Following Tab ─────────────────────────────────────
             _buildFollowingTab(followedUsers),
+            _buildUploadsTab(uploadedPins),
           ],
         ),
       ),
+      floatingActionButton:
+          _tabController.index == 3
+              ? FloatingActionButton(
+                onPressed: () async {
+                  final success =
+                      await ref
+                          .read(uploadedPinsProvider.notifier)
+                          .pickAndUpload();
+                  if (success && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Pin uploaded successfully!'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                },
+                backgroundColor: AppColors.pinterestRed,
+                child: const Icon(Icons.add_a_photo, color: AppColors.white),
+              )
+              : null,
     );
   }
 
+  // ── Saved Tab ──────────────────────────────────────────────────
   Widget _buildSavedTab(Map<int, Photo> savedPins) {
     if (savedPins.isEmpty) {
       return Center(
@@ -233,6 +254,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
+  // ── Following Tab ──────────────────────────────────────────────
   Widget _buildFollowingTab(Map<String, FollowedUser> followedUsers) {
     if (followedUsers.isEmpty) {
       return Center(
@@ -311,6 +333,96 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
+  // ── Uploads Tab ────────────────────────────────────────────────
+  Widget _buildUploadsTab(List<UploadedPin> uploads) {
+    if (uploads.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add_a_photo_outlined,
+              size: 64,
+              color: AppColors.pinterestRed.withValues(alpha: 0.3),
+            ),
+            AppSpacing.gapH16,
+            Text(
+              'No uploads yet',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            AppSpacing.gapH8,
+            Text(
+              'Tap the + button to upload your first pin',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: AppSpacing.paddingAllSm,
+      child: MasonryGridView.count(
+        crossAxisCount: AppConstants.masonryColumnCount,
+        mainAxisSpacing: AppConstants.masonryMainAxisSpacing,
+        crossAxisSpacing: AppConstants.masonryCrossAxisSpacing,
+        itemCount: uploads.length,
+        itemBuilder: (context, index) {
+          final pin = uploads[index];
+          return GestureDetector(
+            onLongPress: () {
+              showDialog(
+                context: context,
+                builder:
+                    (ctx) => AlertDialog(
+                      title: const Text('Delete Upload'),
+                      content: const Text('Remove this uploaded pin?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          onPressed: () {
+                            ref
+                                .read(uploadedPinsProvider.notifier)
+                                .remove(pin.id);
+                            Navigator.pop(ctx);
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.pinterestRed,
+                          ),
+                          child: const Text('Delete'),
+                        ),
+                      ],
+                    ),
+              );
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppConstants.pinBorderRadius),
+              child: Image.file(
+                File(pin.filePath),
+                fit: BoxFit.cover,
+                errorBuilder:
+                    (_, __, ___) => Container(
+                      height: 150,
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: const Icon(Icons.broken_image_outlined, size: 32),
+                    ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ── Create Board Dialog ────────────────────────────────────────
   void _showCreateBoardDialog(BuildContext context) {
     final controller = TextEditingController();
     final theme = Theme.of(context);
@@ -361,6 +473,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
+  // ── Sign Out ───────────────────────────────────────────────────
   void _signOut(BuildContext context) {
     showDialog(
       context: context,
