@@ -1,13 +1,12 @@
+/*
+ * Provider that fetches similar photos using alt text or photographer name as search query.
+ */
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../home/data/datasources/pexels_remote_datasource.dart';
 import '../../../home/domain/entities/photo.dart';
 
-/// Provider that fetches photos similar to a given photo.
-///
-/// Uses the photo's `alt` text as a search query against the Pexels API.
-/// Falls back to the photographer name if alt is empty.
-/// Excludes the current photo from results.
 class SimilarPhotosNotifier extends StateNotifier<AsyncValue<List<Photo>>> {
   SimilarPhotosNotifier({
     required this.currentPhoto,
@@ -22,7 +21,6 @@ class SimilarPhotosNotifier extends StateNotifier<AsyncValue<List<Photo>>> {
 
   Future<void> _loadSimilar() async {
     try {
-      // Use alt text as search query; fall back to photographer name
       final query =
           currentPhoto.alt.isNotEmpty
               ? currentPhoto.alt.split(' ').take(3).join(' ')
@@ -34,7 +32,6 @@ class SimilarPhotosNotifier extends StateNotifier<AsyncValue<List<Photo>>> {
         perPage: 20,
       );
 
-      // Exclude the current photo from results
       final similar =
           result.photos
               .map((p) => p.toEntity())
@@ -47,14 +44,12 @@ class SimilarPhotosNotifier extends StateNotifier<AsyncValue<List<Photo>>> {
     }
   }
 
-  /// Reload similar photos.
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     await _loadSimilar();
   }
 }
 
-/// Family provider — one instance per photo ID.
 final similarPhotosProvider = StateNotifierProvider.family<
   SimilarPhotosNotifier,
   AsyncValue<List<Photo>>,

@@ -1,3 +1,7 @@
+/*
+ * Home feed with "For you" and "Saved" tabs, pull-to-refresh, and infinite scroll.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -12,7 +16,6 @@ import '../providers/home_feed_provider.dart';
 import '../widgets/pin_card.dart';
 import '../widgets/shimmer_grid.dart';
 
-/// Pinterest-style home feed with "For You" + "Saved" tabs.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -55,10 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Tab Row: "For you" + "Saved" ───────────────────────────
             _buildTabRow(context),
-
-            // ── Feed Content ───────────────────────────────────────────
             Expanded(
               child:
                   _activeTabIndex == 0
@@ -86,7 +86,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       child: Row(
         children: [
-          // Tab labels
           Expanded(
             child: Row(
               children: List.generate(tabs.length, (index) {
@@ -114,8 +113,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               }),
             ),
           ),
-
-          // Filter icon
           IconButton(
             onPressed: () {},
             icon: Icon(

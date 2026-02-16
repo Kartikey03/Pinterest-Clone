@@ -1,13 +1,13 @@
+/*
+ * Grid of board cards shown in the profile Boards tab with cover images and pin counts.
+ */
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain/entities/board.dart';
 
-/// Grid of boards shown in the profile's "Boards" tab.
-///
-/// Each board card shows a cover image (or placeholder),
-/// board name, and pin count — matching Pinterest's layout.
 class BoardsGrid extends StatelessWidget {
   const BoardsGrid({
     super.key,
@@ -30,7 +30,7 @@ class BoardsGrid extends StatelessWidget {
         crossAxisSpacing: AppSpacing.sm,
         mainAxisSpacing: AppSpacing.sm,
       ),
-      itemCount: boards.length + 1, // +1 for "Create" button
+      itemCount: boards.length + 1,
       itemBuilder: (context, index) {
         if (index == boards.length) {
           return _CreateBoardCard(onTap: onCreateBoard);
@@ -59,7 +59,6 @@ class _BoardCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Cover Image ──────────────────────────────────────────
           Expanded(
             child:
                 board.coverPhoto != null
@@ -78,8 +77,6 @@ class _BoardCard extends StatelessWidget {
                       ),
                     ),
           ),
-
-          // ── Board Info ──────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(

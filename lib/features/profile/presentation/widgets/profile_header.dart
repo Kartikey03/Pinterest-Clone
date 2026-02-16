@@ -1,13 +1,13 @@
+/*
+ * Profile header with avatar, display name, email, and stat counters.
+ */
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../auth/domain/entities/auth_user.dart';
 
-/// Profile header with avatar, name, email, and stats.
-///
-/// Matches Pinterest's centered profile layout with
-/// large circular avatar, display name, and follower counts.
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({
     super.key,
@@ -31,8 +31,6 @@ class ProfileHeader extends StatelessWidget {
     return Column(
       children: [
         AppSpacing.gapH24,
-
-        // ── Avatar ─────────────────────────────────────────────────
         CircleAvatar(
           radius: 48,
           backgroundColor: AppColors.pinterestRed,
@@ -50,20 +48,14 @@ class ProfileHeader extends StatelessWidget {
                   )
                   : null,
         ),
-
         AppSpacing.gapH16,
-
-        // ── Display Name ──────────────────────────────────────────
         Text(
           displayName,
           style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w700,
           ),
         ),
-
         AppSpacing.gapH4,
-
-        // ── Email ─────────────────────────────────────────────────
         if (user?.email != null && user!.email.isNotEmpty)
           Text(
             user!.email,
@@ -71,10 +63,7 @@ class ProfileHeader extends StatelessWidget {
               color: theme.colorScheme.secondary,
             ),
           ),
-
         AppSpacing.gapH16,
-
-        // ── Stats Row ────────────────────────────────────────────
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -85,7 +74,6 @@ class ProfileHeader extends StatelessWidget {
             _StatItem(count: followingCount, label: 'Following'),
           ],
         ),
-
         AppSpacing.gapH16,
       ],
     );

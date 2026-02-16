@@ -1,13 +1,13 @@
+/*
+ * Singleton Dio network service configured for Pexels API with auth and logging.
+ */
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../core/constants/app_constants.dart';
 
-/// Singleton network service wrapping [Dio].
-///
-/// Pre-configured with Pexels API base URL, auth header,
-/// timeouts, and debug-mode logging.
 class NetworkService {
   NetworkService._();
   static final NetworkService _instance = NetworkService._();
@@ -18,7 +18,6 @@ class NetworkService {
 
   bool _initialized = false;
 
-  /// Must be called once during app initialization.
   Future<void> init() async {
     if (_initialized) return;
 
@@ -35,7 +34,6 @@ class NetworkService {
       ),
     );
 
-    // Debug logging
     if (kDebugMode) {
       _dio.interceptors.add(
         LogInterceptor(

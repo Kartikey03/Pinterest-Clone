@@ -1,13 +1,12 @@
+/*
+ * Inbox screen with Messages and Updates sections (UI only).
+ */
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
-/// Pinterest-style Inbox screen (UI only).
-///
-/// Contains two sections:
-/// - Messages: recent conversations and a "Find people" prompt
-/// - Updates: notification-style feed items with thumbnails
 class InboxScreen extends StatelessWidget {
   const InboxScreen({super.key});
 
@@ -20,7 +19,6 @@ class InboxScreen extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // ── Header ──────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -49,8 +47,6 @@ class InboxScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            // ── Messages Section ────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -87,8 +83,6 @@ class InboxScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            // ── Message Items ───────────────────────────────────────
             SliverToBoxAdapter(
               child: Column(
                 children: [
@@ -109,7 +103,6 @@ class InboxScreen extends StatelessWidget {
                     trailing: '2d',
                     isDark: isDark,
                   ),
-                  // ── Find people tile ──────────────────────────────
                   ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.lg,
@@ -146,8 +139,6 @@ class InboxScreen extends StatelessWidget {
                 ],
               ),
             ),
-
-            // ── Updates Section ─────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -164,8 +155,6 @@ class InboxScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            // ── Update Items ────────────────────────────────────────
             SliverList(
               delegate: SliverChildListDelegate([
                 _UpdateTile(
@@ -214,9 +203,6 @@ class InboxScreen extends StatelessWidget {
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-//  Message Tile
-// ═════════════════════════════════════════════════════════════════════════════
 class _MessageTile extends StatelessWidget {
   const _MessageTile({
     required this.avatarColor,
@@ -280,9 +266,6 @@ class _MessageTile extends StatelessWidget {
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-//  Update Tile
-// ═════════════════════════════════════════════════════════════════════════════
 class _UpdateTile extends StatelessWidget {
   const _UpdateTile({
     required this.title,

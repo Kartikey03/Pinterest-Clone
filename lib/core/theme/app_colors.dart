@@ -1,16 +1,14 @@
+/*
+ * Pinterest brand color palette for light and dark themes.
+ */
+
 import 'package:flutter/material.dart';
 
-/// Pinterest brand color palette.
-///
-/// Extracted from Pinterest's official design system.
-/// Supports both light and dark theme variants.
 abstract final class AppColors {
-  // ── Brand ──────────────────────────────────────────────────────────────
   static const Color pinterestRed = Color(0xFFE60023);
   static const Color pinterestRedDark = Color(0xFFAD081B);
   static const Color pinterestRedLight = Color(0xFFFF5247);
 
-  // ── Light Theme ────────────────────────────────────────────────────────
   static const Color lightBackground = Color(0xFFFFFFFF);
   static const Color lightSurface = Color(0xFFF5F5F5);
   static const Color lightSurfaceVariant = Color(0xFFEEEEEE);
@@ -21,7 +19,6 @@ abstract final class AppColors {
   static const Color lightOverlay = Color(0x80000000);
   static const Color lightCardBackground = Color(0xFFFFFFFF);
 
-  // ── Dark Theme ─────────────────────────────────────────────────────────
   static const Color darkBackground = Color(0xFF121212);
   static const Color darkSurface = Color(0xFF1E1E1E);
   static const Color darkSurfaceVariant = Color(0xFF2C2C2C);
@@ -32,13 +29,11 @@ abstract final class AppColors {
   static const Color darkOverlay = Color(0x80000000);
   static const Color darkCardBackground = Color(0xFF1E1E1E);
 
-  // ── Semantic ───────────────────────────────────────────────────────────
   static const Color success = Color(0xFF00A86B);
   static const Color warning = Color(0xFFFFBD2E);
   static const Color error = Color(0xFFE60023);
   static const Color info = Color(0xFF0076D3);
 
-  // ── Utility ────────────────────────────────────────────────────────────
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
   static const Color transparent = Color(0x00000000);
@@ -47,7 +42,6 @@ abstract final class AppColors {
   static const Color shimmerBaseDark = Color(0xFF2C2C2C);
   static const Color shimmerHighlightDark = Color(0xFF3D3D3D);
 
-  // ── Shadow ─────────────────────────────────────────────────────────────
   static const Color shadowLight = Color(0x1A000000);
   static const Color shadowMedium = Color(0x33000000);
   static const Color shadowDark = Color(0x4D000000);

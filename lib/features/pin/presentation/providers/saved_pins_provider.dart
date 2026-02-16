@@ -1,3 +1,7 @@
+/*
+ * Manages saved/liked pins with SharedPreferences persistence.
+ */
+
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,15 +11,11 @@ import '../../../home/domain/entities/photo.dart';
 
 const _kSavedPinsKey = 'saved_pins_v1';
 
-/// Manages saved/liked pins with full Photo objects.
-///
-/// Persists to SharedPreferences so saved pins survive app restarts.
 class SavedPinsNotifier extends StateNotifier<Map<int, Photo>> {
   SavedPinsNotifier() : super({}) {
     _load();
   }
 
-  /// Toggle the saved state for a photo.
   void toggle(int photoId, Photo photo) {
     if (state.containsKey(photoId)) {
       state = Map.from(state)..remove(photoId);
@@ -25,10 +25,8 @@ class SavedPinsNotifier extends StateNotifier<Map<int, Photo>> {
     _persist();
   }
 
-  /// Check if a photo is saved.
   bool isSaved(int photoId) => state.containsKey(photoId);
 
-  /// Get all saved photos as a list (newest first).
   List<Photo> get savedPhotos => state.values.toList().reversed.toList();
 
   Future<void> _load() async {
@@ -44,9 +42,7 @@ class SavedPinsNotifier extends StateNotifier<Map<int, Photo>> {
         map[photo.id] = photo;
       }
       state = map;
-    } catch (_) {
-      // Ignore corrupted data
-    }
+    } catch (_) {}
   }
 
   Future<void> _persist() async {
@@ -56,7 +52,6 @@ class SavedPinsNotifier extends StateNotifier<Map<int, Photo>> {
   }
 }
 
-/// Global provider for saved/liked pins.
 final savedPinsProvider =
     StateNotifierProvider<SavedPinsNotifier, Map<int, Photo>>((ref) {
       return SavedPinsNotifier();

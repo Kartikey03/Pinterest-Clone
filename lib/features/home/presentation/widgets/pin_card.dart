@@ -1,3 +1,7 @@
+/*
+ * Pin card widget with press animation, shimmer loading, and three-dot options menu.
+ */
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,16 +16,6 @@ import '../../domain/entities/photo.dart';
 import '../../../pin/presentation/providers/saved_pins_provider.dart';
 import '../providers/home_feed_provider.dart';
 
-/// Individual pin card in the masonry grid.
-///
-/// Pinterest UX details replicated:
-/// - Rounded corners (16px)
-/// - CachedNetworkImage with shimmer placeholder
-/// - Three-dot menu below image (no artist name, like real Pinterest)
-/// - Aspect-ratio-aware height (natural photo proportions)
-/// - **Scale-down press effect** (0.96x on tap, Pinterest signature)
-/// - **Staggered fade-in** when appearing in the grid
-/// - **Haptic feedback** on tap
 class PinCard extends ConsumerStatefulWidget {
   const PinCard({super.key, required this.photo, this.onTap, this.index = 0});
 
@@ -35,10 +29,7 @@ class PinCard extends ConsumerStatefulWidget {
 
 class _PinCardState extends ConsumerState<PinCard>
     with SingleTickerProviderStateMixin {
-  // ── Press animation ──────────────────────────────────────────────
   bool _isPressed = false;
-
-  // ── Fade-in animation ────────────────────────────────────────────
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
@@ -62,7 +53,6 @@ class _PinCardState extends ConsumerState<PinCard>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
 
-    // Stagger based on index (capped at 300ms delay)
     Future.delayed(Duration(milliseconds: (widget.index % 10) * 30), () {
       if (mounted) _fadeController.forward();
     });
@@ -107,7 +97,6 @@ class _PinCardState extends ConsumerState<PinCard>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Handle bar
                 Container(
                   margin: const EdgeInsets.only(top: 12),
                   width: 40,
@@ -118,8 +107,6 @@ class _PinCardState extends ConsumerState<PinCard>
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // Download
                 ListTile(
                   leading: const Icon(Icons.download_outlined),
                   title: const Text('Download image'),
@@ -133,8 +120,6 @@ class _PinCardState extends ConsumerState<PinCard>
                     );
                   },
                 ),
-
-                // Share
                 ListTile(
                   leading: const Icon(Icons.share_outlined),
                   title: const Text('Share'),
@@ -146,8 +131,6 @@ class _PinCardState extends ConsumerState<PinCard>
                     Share.share(text);
                   },
                 ),
-
-                // Save / Unsave
                 ListTile(
                   leading: Icon(
                     isSaved ? Icons.bookmark : Icons.bookmark_border,
@@ -160,8 +143,6 @@ class _PinCardState extends ConsumerState<PinCard>
                         .toggle(photo.id, photo);
                   },
                 ),
-
-                // See less like this
                 ListTile(
                   leading: const Icon(Icons.visibility_off_outlined),
                   title: const Text('See less like this'),
@@ -176,8 +157,6 @@ class _PinCardState extends ConsumerState<PinCard>
                     );
                   },
                 ),
-
-                // Report pin
                 ListTile(
                   leading: const Icon(Icons.flag_outlined),
                   title: const Text('Report Pin'),
@@ -185,7 +164,6 @@ class _PinCardState extends ConsumerState<PinCard>
                     Navigator.pop(ctx);
                   },
                 ),
-
                 const SizedBox(height: 8),
               ],
             ),
@@ -206,7 +184,6 @@ class _PinCardState extends ConsumerState<PinCard>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Image (tappable) ────────────────────────────────────
               GestureDetector(
                 onTapDown: _onTapDown,
                 onTapUp: _onTapUp,
@@ -261,8 +238,6 @@ class _PinCardState extends ConsumerState<PinCard>
                   ),
                 ),
               ),
-
-              // ── Three-dot menu (like real Pinterest) ─────────────────
               Align(
                 alignment: Alignment.centerRight,
                 child: SizedBox(

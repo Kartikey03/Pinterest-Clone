@@ -1,9 +1,12 @@
+/*
+ * Riverpod notifier managing user boards (local-only storage).
+ */
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../home/domain/entities/photo.dart';
 import '../../domain/entities/board.dart';
 
-/// Manages the user's boards (local-only for this version).
 class BoardsNotifier extends StateNotifier<List<Board>> {
   BoardsNotifier()
     : super([
@@ -24,7 +27,6 @@ class BoardsNotifier extends StateNotifier<List<Board>> {
         ),
       ]);
 
-  /// Create a new board.
   void createBoard(String name, {String description = ''}) {
     final board = Board(
       id: 'board-${DateTime.now().millisecondsSinceEpoch}',
@@ -34,12 +36,10 @@ class BoardsNotifier extends StateNotifier<List<Board>> {
     state = [...state, board];
   }
 
-  /// Delete a board by ID.
   void deleteBoard(String boardId) {
     state = state.where((b) => b.id != boardId).toList();
   }
 
-  /// Add a pin to a board (updates cover photo and pin count).
   void addPinToBoard(String boardId, Photo photo) {
     state = [
       for (final board in state)
@@ -58,7 +58,6 @@ class BoardsNotifier extends StateNotifier<List<Board>> {
   }
 }
 
-/// Global boards provider.
 final boardsProvider = StateNotifierProvider<BoardsNotifier, List<Board>>((
   ref,
 ) {

@@ -1,3 +1,7 @@
+/*
+ * Profile screen with Saved, Boards, Following, and Uploads tabs.
+ */
+
 import 'dart:io';
 
 import 'package:clerk_flutter/clerk_flutter.dart';
@@ -20,15 +24,6 @@ import '../providers/uploaded_pins_provider.dart';
 import '../widgets/boards_grid.dart';
 import '../widgets/profile_header.dart';
 
-/// Pinterest-style profile screen.
-///
-/// Features replicated:
-/// - Centered profile header with avatar and stats
-/// - Tab bar: Saved, Boards, Following, Uploads
-/// - Create board dialog
-/// - Settings gear icon in app bar
-/// - Dark/light theme toggle
-/// - Sign out option
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -128,7 +123,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       body: NestedScrollView(
         headerSliverBuilder:
             (context, innerBoxIsScrolled) => [
-              // ── Profile Header ──────────────────────────────────────
               SliverToBoxAdapter(
                 child: ProfileHeader(
                   user: user,
@@ -137,8 +131,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   followingCount: followedUsers.length,
                 ),
               ),
-
-              // ── Tab Bar ─────────────────────────────────────────────
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _TabBarDelegate(
@@ -200,7 +192,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  // ── Saved Tab ──────────────────────────────────────────────────
   Widget _buildSavedTab(Map<int, Photo> savedPins) {
     if (savedPins.isEmpty) {
       return Center(
@@ -254,7 +245,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  // ── Following Tab ──────────────────────────────────────────────
   Widget _buildFollowingTab(Map<String, FollowedUser> followedUsers) {
     if (followedUsers.isEmpty) {
       return Center(
@@ -333,7 +323,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  // ── Uploads Tab ────────────────────────────────────────────────
   Widget _buildUploadsTab(List<UploadedPin> uploads) {
     if (uploads.isEmpty) {
       return Center(
@@ -422,7 +411,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  // ── Create Board Dialog ────────────────────────────────────────
   void _showCreateBoardDialog(BuildContext context) {
     final controller = TextEditingController();
     final theme = Theme.of(context);
@@ -473,7 +461,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  // ── Sign Out ───────────────────────────────────────────────────
   void _signOut(BuildContext context) {
     showDialog(
       context: context,
@@ -498,9 +485,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     if (context.mounted) {
                       ref.read(authNotifierProvider.notifier).clear();
                     }
-                  } catch (_) {
-                    // Clerk may not be available
-                  }
+                  } catch (_) {}
                 },
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.pinterestRed,
@@ -513,7 +498,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 }
 
-/// Delegate to pin the TabBar below the profile header.
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   const _TabBarDelegate({required this.tabBar, required this.backgroundColor});
 

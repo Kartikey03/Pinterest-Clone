@@ -1,11 +1,11 @@
+/*
+ * Category suggestion chips grid with colored icons for search discovery.
+ */
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 
-/// Category suggestion chips shown when search is empty.
-///
-/// Replicates Pinterest's browse-by-category grid with
-/// colored circular icons and labels.
 class CategoryChips extends StatelessWidget {
   const CategoryChips({super.key, required this.onCategoryTap});
 

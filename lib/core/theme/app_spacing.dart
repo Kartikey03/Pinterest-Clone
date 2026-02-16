@@ -1,11 +1,10 @@
+/*
+ * 4px-grid spacing system: raw values, border radii, edge insets, and gap widgets.
+ */
+
 import 'package:flutter/material.dart';
 
-/// 4px-grid spacing system used throughout the app.
-///
-/// Consistent spacing creates the clean, airy feel that
-/// characterizes Pinterest's UI.
 abstract final class AppSpacing {
-  // ── Raw Values ─────────────────────────────────────────────────────────
   static const double xxs = 2;
   static const double xs = 4;
   static const double sm = 8;
@@ -16,7 +15,6 @@ abstract final class AppSpacing {
   static const double xxxl = 32;
   static const double xxxxl = 48;
 
-  // ── Border Radius ──────────────────────────────────────────────────────
   static const double radiusSm = 8;
   static const double radiusMd = 16;
   static const double radiusLg = 24;
@@ -29,7 +27,6 @@ abstract final class AppSpacing {
   static BorderRadius get borderRadiusXl => BorderRadius.circular(radiusXl);
   static BorderRadius get borderRadiusFull => BorderRadius.circular(radiusFull);
 
-  // ── Edge Insets ────────────────────────────────────────────────────────
   static const EdgeInsets paddingAllXs = EdgeInsets.all(xs);
   static const EdgeInsets paddingAllSm = EdgeInsets.all(sm);
   static const EdgeInsets paddingAllMd = EdgeInsets.all(md);
@@ -60,7 +57,6 @@ abstract final class AppSpacing {
     vertical: lg,
   );
 
-  // ── Gap Widgets ────────────────────────────────────────────────────────
   static const SizedBox gapH2 = SizedBox(height: xxs);
   static const SizedBox gapH4 = SizedBox(height: xs);
   static const SizedBox gapH8 = SizedBox(height: sm);

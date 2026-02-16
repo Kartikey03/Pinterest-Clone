@@ -1,14 +1,13 @@
+/*
+ * Horizontally-swipeable carousel of trending topics with tap-to-search callback.
+ */
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
-/// Trending carousel matching Pinterest's search page hero section.
-///
-/// Shows a horizontally-swipeable PageView of trending topic images
-/// with "Trending now" label and topic title overlaid at the bottom.
-/// Tapping a topic triggers [onTopicTap] to search for that topic.
 class TrendingCarousel extends StatefulWidget {
   const TrendingCarousel({super.key, this.onTopicTap});
 
@@ -60,7 +59,6 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ── Carousel ───────────────────────────────────────────────
         SizedBox(
           height: 220,
           child: PageView.builder(
@@ -90,7 +88,6 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
                                 child: const Icon(Icons.image_not_supported),
                               ),
                         ),
-                        // Gradient overlay
                         Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -104,7 +101,6 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
                             ),
                           ),
                         ),
-                        // Text overlay
                         Positioned(
                           left: AppSpacing.lg,
                           bottom: AppSpacing.lg,
@@ -142,8 +138,6 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
             },
           ),
         ),
-
-        // ── Dots indicator ─────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.only(top: AppSpacing.sm),
           child: Row(

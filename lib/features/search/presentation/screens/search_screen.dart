@@ -1,3 +1,7 @@
+/*
+ * Search screen with search bar, trending carousel, featured boards, and results grid.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -13,15 +17,6 @@ import '../widgets/category_chips.dart';
 import '../widgets/trending_carousel.dart';
 import '../widgets/featured_boards.dart';
 
-/// Pinterest-style search screen.
-///
-/// Features replicated from the real Pinterest app:
-/// - Rounded search bar at top with camera icon
-/// - Trending carousel when search is empty
-/// - "Ideas you might like" featured boards section
-/// - Category suggestion chips
-/// - Debounced search results in masonry grid
-/// - Infinite scroll on search results
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -52,10 +47,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-
     if (currentScroll >= maxScroll * 0.8) {
       ref.read(searchProvider.notifier).loadNextPage();
     }
@@ -72,7 +65,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required by AutomaticKeepAliveClientMixin
+    super.build(context);
     final searchState = ref.watch(searchProvider);
     final theme = Theme.of(context);
 
@@ -80,7 +73,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // ── Search Bar ─────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: TextField(
@@ -106,7 +98,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                           )
                           : IconButton(
                             onPressed: () {
-                              // Camera search placeholder
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Visual search coming soon!'),
@@ -132,8 +123,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 ),
               ),
             ),
-
-            // ── Content ────────────────────────────────────────────────
             Expanded(child: _buildContent(searchState)),
           ],
         ),
@@ -142,47 +131,34 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildContent(SearchState state) {
-    // Empty query → show discovery content
     if (state.query.isEmpty) {
       return SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Trending Carousel ────────────────────────────────────
             TrendingCarousel(onTopicTap: _onCategoryTap),
-
             const SizedBox(height: AppSpacing.lg),
-
-            // ── Featured Boards ──────────────────────────────────────
             FeaturedBoards(onBoardTap: _onCategoryTap),
-
             const SizedBox(height: AppSpacing.lg),
-
-            // ── Category Chips ───────────────────────────────────────
             CategoryChips(onCategoryTap: _onCategoryTap),
-
             const SizedBox(height: AppSpacing.xxxxl),
           ],
         ),
       );
     }
 
-    // Searching → shimmer
     if (state.isSearching && state.photos.isEmpty) {
       return const ShimmerGrid();
     }
 
-    // No results
     if (state.isEmpty) {
       return _buildEmptyState();
     }
 
-    // Error
     if (state.hasError && state.photos.isEmpty) {
       return _buildErrorState();
     }
 
-    // Results grid
     return _buildResultsGrid(state);
   }
 
@@ -250,7 +226,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       controller: _scrollController,
       cacheExtent: 500,
       slivers: [
-        // Results header
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -266,8 +241,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             ),
           ),
         ),
-
-        // Masonry grid
         SliverPadding(
           padding: AppSpacing.paddingAllSm,
           sliver: SliverMasonryGrid.count(
@@ -287,8 +260,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             },
           ),
         ),
-
-        // Loading indicator
         if (state.isLoadingMore)
           const SliverToBoxAdapter(
             child: Padding(
@@ -301,7 +272,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               ),
             ),
           ),
-
         const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxxl)),
       ],
     );

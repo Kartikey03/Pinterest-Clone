@@ -1,11 +1,12 @@
+/*
+ * Pinterest-style refresh indicator with spinning logo on pull-to-refresh.
+ */
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// Pinterest-style refresh indicator that shows the Pinterest logo
-/// bouncing at the top during pull-to-refresh, mimicking the
-/// real Pinterest app's refresh animation.
 class PinterestRefreshIndicator extends StatefulWidget {
   const PinterestRefreshIndicator({
     super.key,

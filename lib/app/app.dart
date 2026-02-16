@@ -1,3 +1,7 @@
+/*
+ * Root application widget: wraps app with ClerkAuth, MaterialApp.router, and Pinterest theme.
+ */
+
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,11 +11,6 @@ import '../core/router/app_router.dart';
 import '../core/theme/app_theme.dart';
 import 'theme_provider.dart';
 
-/// Root application widget.
-///
-/// Wraps the entire app with [ClerkAuth] for session management.
-/// [ClerkErrorListener] catches and displays auth errors.
-/// [MaterialApp.router] provides GoRouter navigation + Pinterest theme.
 class PinterestApp extends ConsumerWidget {
   const PinterestApp({super.key});
 
@@ -25,17 +24,10 @@ class PinterestApp extends ConsumerWidget {
       child: MaterialApp.router(
         title: 'Pinterest',
         debugShowCheckedModeBanner: false,
-
-        // Theme
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: themeMode,
-
-        // Routing
         routerConfig: AppRouter.router,
-
-        // ClerkErrorListener needs ScaffoldMessenger (provided by MaterialApp),
-        // so it must be placed inside the builder, not above MaterialApp.
         builder:
             (context, child) =>
                 ClerkErrorListener(child: child ?? const SizedBox.shrink()),

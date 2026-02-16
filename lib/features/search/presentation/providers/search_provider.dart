@@ -1,3 +1,7 @@
+/*
+ * Search state notifier with debounced queries and infinite scroll pagination.
+ */
+
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../home/domain/entities/photo.dart';
 import '../../data/repositories/search_repository.dart';
 
-/// State for search results.
 class SearchState {
   const SearchState({
     this.query = '',
@@ -54,7 +57,6 @@ class SearchState {
   }
 }
 
-/// Riverpod notifier managing search state with debounce.
 class SearchNotifier extends StateNotifier<SearchState> {
   SearchNotifier({SearchRepository? repository})
     : _repository = repository ?? SearchRepository(),
@@ -63,7 +65,6 @@ class SearchNotifier extends StateNotifier<SearchState> {
   final SearchRepository _repository;
   Timer? _debounceTimer;
 
-  /// Called on every keystroke. Debounces 400ms before searching.
   void onQueryChanged(String query) {
     _debounceTimer?.cancel();
 
@@ -79,7 +80,6 @@ class SearchNotifier extends StateNotifier<SearchState> {
     });
   }
 
-  /// Execute the search API call.
   Future<void> _performSearch(String query) async {
     try {
       final result = await _repository.searchPhotos(query: query, page: 1);
@@ -98,7 +98,6 @@ class SearchNotifier extends StateNotifier<SearchState> {
     }
   }
 
-  /// Load next page of search results (infinite scroll).
   Future<void> loadNextPage() async {
     if (!state.hasMore || state.isLoadingMore || state.query.isEmpty) return;
 
@@ -124,7 +123,6 @@ class SearchNotifier extends StateNotifier<SearchState> {
     }
   }
 
-  /// Clear search results.
   void clear() {
     _debounceTimer?.cancel();
     state = const SearchState();
@@ -137,7 +135,6 @@ class SearchNotifier extends StateNotifier<SearchState> {
   }
 }
 
-/// Global search provider.
 final searchProvider = StateNotifierProvider<SearchNotifier, SearchState>((
   ref,
 ) {

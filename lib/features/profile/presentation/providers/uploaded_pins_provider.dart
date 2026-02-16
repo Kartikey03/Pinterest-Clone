@@ -1,3 +1,7 @@
+/*
+ * Manages user-uploaded pins with local file storage and SharedPreferences.
+ */
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -8,7 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _kUploadedPinsKey = 'uploaded_pins_v1';
 
-/// Represents a user-uploaded pin stored locally.
 class UploadedPin {
   const UploadedPin({
     required this.id,
@@ -33,10 +36,6 @@ class UploadedPin {
   );
 }
 
-/// Manages user-uploaded pins.
-///
-/// Images are copied to the app's documents directory for persistence
-/// and metadata is stored in SharedPreferences.
 class UploadedPinsNotifier extends StateNotifier<List<UploadedPin>> {
   UploadedPinsNotifier() : super([]) {
     _load();
@@ -44,7 +43,6 @@ class UploadedPinsNotifier extends StateNotifier<List<UploadedPin>> {
 
   final _picker = ImagePicker();
 
-  /// Pick an image from gallery and save locally.
   Future<bool> pickAndUpload() async {
     final xFile = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -55,7 +53,6 @@ class UploadedPinsNotifier extends StateNotifier<List<UploadedPin>> {
 
     if (xFile == null) return false;
 
-    // Copy to persistent app directory
     final appDir = await getApplicationDocumentsDirectory();
     final pinsDirPath = '${appDir.path}/uploaded_pins';
     final pinsDir = Directory(pinsDirPath);
@@ -80,7 +77,6 @@ class UploadedPinsNotifier extends StateNotifier<List<UploadedPin>> {
     return true;
   }
 
-  /// Remove an uploaded pin.
   void remove(String pinId) {
     final pin = state.firstWhere((p) => p.id == pinId);
     final file = File(pin.filePath);
@@ -110,7 +106,6 @@ class UploadedPinsNotifier extends StateNotifier<List<UploadedPin>> {
   }
 }
 
-/// Global provider for uploaded pins.
 final uploadedPinsProvider =
     StateNotifierProvider<UploadedPinsNotifier, List<UploadedPin>>((ref) {
       return UploadedPinsNotifier();

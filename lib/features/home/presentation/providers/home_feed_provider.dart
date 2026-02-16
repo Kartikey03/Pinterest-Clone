@@ -1,10 +1,13 @@
+/*
+ * Riverpod notifier for home feed: initial load, pagination, refresh, and photo removal.
+ */
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/repositories/photo_repository_impl.dart';
 import '../../domain/entities/photo.dart';
 import '../../domain/repositories/photo_repository.dart';
 
-/// State for the home feed.
 class HomeFeedState {
   const HomeFeedState({
     this.photos = const [],
@@ -44,12 +47,6 @@ class HomeFeedState {
   }
 }
 
-/// Riverpod notifier managing the home feed state.
-///
-/// Handles:
-/// - Initial load (first page of curated photos)
-/// - Infinite scroll (appending next pages)
-/// - Pull-to-refresh (reset to page 1)
 class HomeFeedNotifier extends StateNotifier<AsyncValue<HomeFeedState>> {
   HomeFeedNotifier({PhotoRepository? repository})
     : _repository = repository ?? PhotoRepositoryImpl(),
@@ -59,7 +56,6 @@ class HomeFeedNotifier extends StateNotifier<AsyncValue<HomeFeedState>> {
 
   final PhotoRepository _repository;
 
-  /// Load the first page of curated photos.
   Future<void> loadInitial() async {
     state = const AsyncValue.loading();
     try {
@@ -76,7 +72,6 @@ class HomeFeedNotifier extends StateNotifier<AsyncValue<HomeFeedState>> {
     }
   }
 
-  /// Load the next page (infinite scroll).
   Future<void> loadNextPage() async {
     final current = state.valueOrNull;
     if (current == null || !current.hasMore || current.isLoadingMore) return;
@@ -104,7 +99,6 @@ class HomeFeedNotifier extends StateNotifier<AsyncValue<HomeFeedState>> {
     }
   }
 
-  /// Refresh the feed (pull-to-refresh).
   Future<void> refresh() async {
     try {
       final result = await _repository.getCuratedPhotos(1);
@@ -120,7 +114,6 @@ class HomeFeedNotifier extends StateNotifier<AsyncValue<HomeFeedState>> {
     }
   }
 
-  /// Remove a specific photo from the feed (e.g. "See less like this").
   void removePhoto(int photoId) {
     final current = state.valueOrNull;
     if (current == null) return;
@@ -132,7 +125,6 @@ class HomeFeedNotifier extends StateNotifier<AsyncValue<HomeFeedState>> {
   }
 }
 
-/// Global provider for the home feed.
 final homeFeedProvider =
     StateNotifierProvider<HomeFeedNotifier, AsyncValue<HomeFeedState>>((ref) {
       return HomeFeedNotifier();

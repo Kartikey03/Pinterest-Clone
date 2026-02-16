@@ -1,15 +1,9 @@
+/*
+ * Data model mapping Pexels API photo object to domain Photo entity.
+ */
+
 import '../../domain/entities/photo.dart';
 
-/// Data model mapping the Pexels API photo object.
-///
-/// Pexels API response for a single photo:
-/// ```json
-/// { "id": 123, "width": 800, "height": 1200,
-///   "photographer": "...", "photographer_url": "...",
-///   "src": { "original": "...", "large2x": "...", "medium": "...",
-///            "small": "...", "portrait": "...", "tiny": "..." },
-///   "alt": "description" }
-/// ```
 class PhotoModel {
   const PhotoModel({
     required this.id,
@@ -41,7 +35,6 @@ class PhotoModel {
     );
   }
 
-  /// Map to domain entity.
   Photo toEntity() {
     return Photo(
       id: id,
@@ -57,7 +50,6 @@ class PhotoModel {
   }
 }
 
-/// Pexels photo source URLs at various resolutions.
 class PhotoSrcModel {
   const PhotoSrcModel({
     required this.original,

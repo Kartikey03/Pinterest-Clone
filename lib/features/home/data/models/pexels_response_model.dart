@@ -1,12 +1,9 @@
+/*
+ * Data model for the Pexels curated/search API response with pagination info.
+ */
+
 import 'photo_model.dart';
 
-/// Data model for the Pexels curated photos API response.
-///
-/// Pexels response shape:
-/// ```json
-/// { "page": 1, "per_page": 20, "total_results": 8000,
-///   "next_page": "https://...", "photos": [...] }
-/// ```
 class PexelsResponseModel {
   const PexelsResponseModel({
     required this.page,

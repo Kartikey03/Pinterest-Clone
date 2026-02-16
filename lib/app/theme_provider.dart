@@ -1,7 +1,10 @@
+/*
+ * ThemeMode notifier: manages light/dark/system theme switching.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Manages the app-wide [ThemeMode] (light / dark / system).
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   ThemeModeNotifier() : super(ThemeMode.dark);
 

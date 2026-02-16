@@ -1,20 +1,18 @@
+/*
+ * Pinterest typography system built on Inter font via Google Fonts.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Pinterest-style typography system built on Inter font.
-///
-/// Pinterest uses a clean, modern sans-serif. Inter is the closest
-/// open-source match to their proprietary font stack.
 abstract final class AppTypography {
   static String? _fontFamily;
 
-  /// Initialize the font family. Call once at app startup.
   static String get fontFamily {
     _fontFamily ??= GoogleFonts.inter().fontFamily;
     return _fontFamily!;
   }
 
-  // ── Display ────────────────────────────────────────────────────────────
   static TextStyle get displayLarge => GoogleFonts.inter(
     fontSize: 36,
     fontWeight: FontWeight.w800,
@@ -29,7 +27,6 @@ abstract final class AppTypography {
     height: 1.25,
   );
 
-  // ── Headline ───────────────────────────────────────────────────────────
   static TextStyle get headlineLarge =>
       GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, height: 1.3);
 
@@ -45,7 +42,6 @@ abstract final class AppTypography {
     height: 1.35,
   );
 
-  // ── Title ──────────────────────────────────────────────────────────────
   static TextStyle get titleLarge =>
       GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, height: 1.4);
 
@@ -55,7 +51,6 @@ abstract final class AppTypography {
   static TextStyle get titleSmall =>
       GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, height: 1.4);
 
-  // ── Body ───────────────────────────────────────────────────────────────
   static TextStyle get bodyLarge =>
       GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w400, height: 1.5);
 
@@ -65,7 +60,6 @@ abstract final class AppTypography {
   static TextStyle get bodySmall =>
       GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400, height: 1.5);
 
-  // ── Label ──────────────────────────────────────────────────────────────
   static TextStyle get labelLarge => GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.w500,
@@ -87,7 +81,6 @@ abstract final class AppTypography {
     letterSpacing: 0.5,
   );
 
-  /// Build the complete [TextTheme] for use in [ThemeData].
   static TextTheme get textTheme => TextTheme(
     displayLarge: displayLarge,
     displayMedium: displayMedium,

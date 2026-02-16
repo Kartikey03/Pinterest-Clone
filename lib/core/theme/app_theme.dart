@@ -1,3 +1,7 @@
+/*
+ * Material 3 ThemeData builder for light and dark modes matching Pinterest's design.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -5,14 +9,7 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// Builds the complete [ThemeData] for light and dark modes.
-///
-/// Configures Material 3 components to match Pinterest's
-/// clean, minimal design language.
 abstract final class AppTheme {
-  // ═══════════════════════════════════════════════════════════════════════
-  //  LIGHT THEME
-  // ═══════════════════════════════════════════════════════════════════════
   static ThemeData get light {
     final colorScheme = ColorScheme.light(
       primary: AppColors.pinterestRed,
@@ -37,8 +34,6 @@ abstract final class AppTheme {
         bodyColor: AppColors.lightTextPrimary,
         displayColor: AppColors.lightTextPrimary,
       ),
-
-      // ── AppBar ───────────────────────────────────────────────────────
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0.5,
@@ -51,8 +46,6 @@ abstract final class AppTheme {
           color: AppColors.lightTextPrimary,
         ),
       ),
-
-      // ── Bottom Nav ───────────────────────────────────────────────────
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppColors.lightBackground,
@@ -66,16 +59,12 @@ abstract final class AppTheme {
         ),
         unselectedLabelStyle: AppTypography.labelSmall,
       ),
-
-      // ── Card ─────────────────────────────────────────────────────────
       cardTheme: CardThemeData(
         color: AppColors.lightCardBackground,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
       ),
-
-      // ── Elevated Button ──────────────────────────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.pinterestRed,
@@ -93,16 +82,12 @@ abstract final class AppTheme {
           ),
         ),
       ),
-
-      // ── Text Button ──────────────────────────────────────────────────
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.lightTextPrimary,
           textStyle: AppTypography.labelLarge,
         ),
       ),
-
-      // ── Input Decoration ─────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.lightSurfaceVariant,
@@ -126,15 +111,11 @@ abstract final class AppTheme {
           color: AppColors.lightTextTertiary,
         ),
       ),
-
-      // ── Divider ──────────────────────────────────────────────────────
       dividerTheme: const DividerThemeData(
         color: AppColors.lightDivider,
         thickness: 1,
         space: 0,
       ),
-
-      // ── Chip ─────────────────────────────────────────────────────────
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.lightSurfaceVariant,
         selectedColor: AppColors.lightTextPrimary,
@@ -145,15 +126,10 @@ abstract final class AppTheme {
         side: BorderSide.none,
         padding: AppSpacing.paddingHorizontalSm,
       ),
-
-      // ── Splash / Ripple ──────────────────────────────────────────────
       splashFactory: InkSparkle.splashFactory,
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  DARK THEME
-  // ═══════════════════════════════════════════════════════════════════════
   static ThemeData get dark {
     final colorScheme = ColorScheme.dark(
       primary: AppColors.pinterestRed,
@@ -178,8 +154,6 @@ abstract final class AppTheme {
         bodyColor: AppColors.darkTextPrimary,
         displayColor: AppColors.darkTextPrimary,
       ),
-
-      // ── AppBar ───────────────────────────────────────────────────────
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0.5,
@@ -192,8 +166,6 @@ abstract final class AppTheme {
           color: AppColors.darkTextPrimary,
         ),
       ),
-
-      // ── Bottom Nav ───────────────────────────────────────────────────
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppColors.darkBackground,
@@ -207,16 +179,12 @@ abstract final class AppTheme {
         ),
         unselectedLabelStyle: AppTypography.labelSmall,
       ),
-
-      // ── Card ─────────────────────────────────────────────────────────
       cardTheme: CardThemeData(
         color: AppColors.darkCardBackground,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
       ),
-
-      // ── Elevated Button ──────────────────────────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.pinterestRed,
@@ -234,16 +202,12 @@ abstract final class AppTheme {
           ),
         ),
       ),
-
-      // ── Text Button ──────────────────────────────────────────────────
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.darkTextPrimary,
           textStyle: AppTypography.labelLarge,
         ),
       ),
-
-      // ── Input Decoration ─────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.darkSurfaceVariant,
@@ -267,15 +231,11 @@ abstract final class AppTheme {
           color: AppColors.darkTextTertiary,
         ),
       ),
-
-      // ── Divider ──────────────────────────────────────────────────────
       dividerTheme: const DividerThemeData(
         color: AppColors.darkDivider,
         thickness: 1,
         space: 0,
       ),
-
-      // ── Chip ─────────────────────────────────────────────────────────
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.darkSurfaceVariant,
         selectedColor: AppColors.darkTextPrimary,
@@ -286,8 +246,6 @@ abstract final class AppTheme {
         side: BorderSide.none,
         padding: AppSpacing.paddingHorizontalSm,
       ),
-
-      // ── Splash / Ripple ──────────────────────────────────────────────
       splashFactory: InkSparkle.splashFactory,
     );
   }

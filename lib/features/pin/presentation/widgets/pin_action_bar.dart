@@ -1,3 +1,7 @@
+/*
+ * Bottom action bar for pin detail: save/heart, share, and visit buttons.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,12 +14,6 @@ import '../../../../core/widgets/animated_heart_button.dart';
 import '../../../home/domain/entities/photo.dart';
 import '../providers/saved_pins_provider.dart';
 
-/// Action bar shown at the bottom of the pin detail screen.
-///
-/// Pinterest UX replicated:
-/// - Save/heart toggle with animated bounce
-/// - Share button
-/// - Visit photographer link
 class PinActionBar extends ConsumerWidget {
   const PinActionBar({super.key, required this.photo});
 
@@ -41,7 +39,6 @@ class PinActionBar extends ConsumerWidget {
         top: false,
         child: Row(
           children: [
-            // ── Save / Heart Button (animated) ──────────────────────
             GestureDetector(
               onTap: () {
                 HapticFeedback.mediumImpact();
@@ -76,10 +73,7 @@ class PinActionBar extends ConsumerWidget {
                 ),
               ),
             ),
-
             AppSpacing.gapW16,
-
-            // ── Share Button ─────────────────────────────────────────
             _ActionButton(
               icon: Icons.share_outlined,
               label: 'Share',
@@ -90,10 +84,7 @@ class PinActionBar extends ConsumerWidget {
                 Share.share(text);
               },
             ),
-
             const Spacer(),
-
-            // ── Visit Button ────────────────────────────────────────
             FilledButton(
               onPressed: () async {
                 final url = Uri.parse(photo.photographerUrl);
@@ -116,7 +107,6 @@ class PinActionBar extends ConsumerWidget {
   }
 }
 
-/// Small icon + label button used in the action bar.
 class _ActionButton extends StatelessWidget {
   const _ActionButton({
     required this.icon,

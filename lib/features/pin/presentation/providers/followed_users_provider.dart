@@ -1,3 +1,7 @@
+/*
+ * Manages followed photographers with SharedPreferences persistence.
+ */
+
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _kFollowedUsersKey = 'followed_users_v1';
 
-/// Represents a followed photographer.
 class FollowedUser {
   const FollowedUser({
     required this.photographerName,
@@ -30,15 +33,11 @@ class FollowedUser {
   );
 }
 
-/// Manages followed photographers.
-///
-/// Persists to SharedPreferences so follows survive app restarts.
 class FollowedUsersNotifier extends StateNotifier<Map<String, FollowedUser>> {
   FollowedUsersNotifier() : super({}) {
     _load();
   }
 
-  /// Toggle follow state for a photographer.
   void toggle({
     required String photographerName,
     required String photographerUrl,
@@ -61,11 +60,9 @@ class FollowedUsersNotifier extends StateNotifier<Map<String, FollowedUser>> {
     _persist();
   }
 
-  /// Check if a photographer is followed.
   bool isFollowing(String photographerUrl) =>
       state.containsKey(photographerUrl);
 
-  /// Get all followed users as a list.
   List<FollowedUser> get followedUsers => state.values.toList();
 
   Future<void> _load() async {
@@ -81,9 +78,7 @@ class FollowedUsersNotifier extends StateNotifier<Map<String, FollowedUser>> {
         map[user.photographerUrl] = user;
       }
       state = map;
-    } catch (_) {
-      // Ignore corrupted data
-    }
+    } catch (_) {}
   }
 
   Future<void> _persist() async {
@@ -93,7 +88,6 @@ class FollowedUsersNotifier extends StateNotifier<Map<String, FollowedUser>> {
   }
 }
 
-/// Global provider for followed photographers.
 final followedUsersProvider =
     StateNotifierProvider<FollowedUsersNotifier, Map<String, FollowedUser>>((
       ref,

@@ -1,6 +1,9 @@
+/*
+ * Board domain entity representing a collection of pins.
+ */
+
 import '../../../home/domain/entities/photo.dart';
 
-/// Domain entity representing a board (collection of pins).
 class Board {
   const Board({
     required this.id,

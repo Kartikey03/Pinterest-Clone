@@ -1,12 +1,12 @@
+/*
+ * Animated heart/save button with scale bounce on toggle.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// Animated heart/save button with scale bounce on toggle.
-///
-/// Replicates the satisfying "pop" effect when saving a pin
-/// on Pinterest — the heart scales up briefly then settles.
 class AnimatedHeartButton extends StatefulWidget {
   const AnimatedHeartButton({
     super.key,
@@ -62,7 +62,6 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton>
   @override
   void didUpdateWidget(AnimatedHeartButton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Trigger bounce when going from unsaved → saved
     if (widget.isSaved && !oldWidget.isSaved) {
       _controller.forward(from: 0);
     }

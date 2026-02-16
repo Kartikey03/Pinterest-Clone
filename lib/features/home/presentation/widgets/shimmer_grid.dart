@@ -1,3 +1,7 @@
+/*
+ * Shimmer loading skeleton matching the masonry grid layout with random heights.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -8,10 +12,6 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
-/// Shimmer loading skeleton matching the masonry grid layout.
-///
-/// Pinterest shows placeholder cards with randomized heights
-/// while the feed is loading. This creates the same visual effect.
 class ShimmerGrid extends StatelessWidget {
   const ShimmerGrid({super.key, this.itemCount = 8});
 
@@ -20,7 +20,7 @@ class ShimmerGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final random = Random(42); // Fixed seed for consistent layout
+    final random = Random(42);
 
     return Shimmer.fromColors(
       baseColor: isDark ? AppColors.shimmerBaseDark : AppColors.shimmerBase,
@@ -36,13 +36,11 @@ class ShimmerGrid extends StatelessWidget {
           shrinkWrap: true,
           itemCount: itemCount,
           itemBuilder: (context, index) {
-            // Randomize heights between 150-300px to mimic real content
             final height = 150.0 + random.nextDouble() * 150.0;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image placeholder
                 Container(
                   height: height,
                   decoration: BoxDecoration(
@@ -55,13 +53,9 @@ class ShimmerGrid extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: AppSpacing.sm),
-
-                // Photographer name placeholder
                 Row(
                   children: [
-                    // Avatar circle
                     Container(
                       width: 20,
                       height: 20,
@@ -74,7 +68,6 @@ class ShimmerGrid extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    // Name bar
                     Container(
                       width: 60 + random.nextDouble() * 40,
                       height: 12,

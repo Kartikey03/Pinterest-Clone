@@ -1,15 +1,13 @@
+/*
+ * Horizontally scrollable featured boards section with image collage cards.
+ */
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
-/// "Ideas you might like" featured boards section.
-///
-/// Matches Pinterest's search page layout: a section header
-/// with horizontally scrollable board cards containing
-/// a grid of images, a board title, and metadata.
-/// Tapping a board triggers [onBoardTap] to search for that topic.
 class FeaturedBoards extends StatelessWidget {
   const FeaturedBoards({super.key, this.onBoardTap});
 
@@ -65,7 +63,6 @@ class FeaturedBoards extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Section Header ──────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: Column(
@@ -88,10 +85,7 @@ class FeaturedBoards extends StatelessWidget {
             ],
           ),
         ),
-
         const SizedBox(height: AppSpacing.md),
-
-        // ── Horizontal Board Cards ──────────────────────────────────
         SizedBox(
           height: 200,
           child: ListView.separated(
@@ -145,13 +139,11 @@ class _BoardCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Image Collage ──────────────────────────────────────────
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 child: Row(
                   children: [
-                    // Main large image
                     Expanded(
                       flex: 2,
                       child: CachedNetworkImage(
@@ -175,7 +167,6 @@ class _BoardCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 2),
-                    // Two stacked smaller images
                     Expanded(
                       child: Column(
                         children: [
@@ -229,8 +220,6 @@ class _BoardCard extends StatelessWidget {
                 ),
               ),
             ),
-
-            // ── Board Info ─────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.xs),
               child: Column(

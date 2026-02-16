@@ -1,7 +1,7 @@
-/// Domain entity representing a photo/pin.
-///
-/// Decoupled from the Pexels API response model so the domain
-/// layer has zero dependency on any external API.
+/*
+ * Domain entity for a photo/pin with JSON serialization for persistence.
+ */
+
 class Photo {
   const Photo({
     required this.id,
@@ -20,24 +20,13 @@ class Photo {
   final int height;
   final String photographer;
   final String photographerUrl;
-
-  /// High-quality image URL (large2x from Pexels).
   final String imageUrl;
-
-  /// Medium quality for grid display.
   final String thumbnailUrl;
-
-  /// Tiny placeholder for blurred loading preview.
   final String tinyUrl;
-
-  /// Alt text / description.
   final String alt;
 
-  /// Aspect ratio used to size masonry grid cards.
-  /// Pinterest varies card heights based on this value.
   double get aspectRatio => height / width;
 
-  /// Serialize to JSON map for SharedPreferences storage.
   Map<String, dynamic> toJson() => {
     'id': id,
     'width': width,
@@ -50,7 +39,6 @@ class Photo {
     'alt': alt,
   };
 
-  /// Deserialize from JSON map.
   factory Photo.fromJson(Map<String, dynamic> json) => Photo(
     id: json['id'] as int,
     width: json['width'] as int,

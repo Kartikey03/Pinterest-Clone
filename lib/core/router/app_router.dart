@@ -1,3 +1,7 @@
+/*
+ * GoRouter configuration with auth-aware redirects and bottom-nav shell.
+ */
+
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -11,17 +15,7 @@ import '../../features/pin/presentation/screens/pin_detail_screen.dart';
 import '../../features/search/presentation/screens/search_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 
-/// Centralized GoRouter configuration with auth-aware redirects.
-///
-/// Uses [ShellRoute] for the bottom navigation scaffold so that
-/// tab state (including scroll position) is preserved when switching
-/// between Home, Search, and Profile.
-///
-/// Route guard logic:
-/// - Unauthenticated user → redirect to `/login`
-/// - Authenticated user on `/login` → redirect to `/`
 abstract final class AppRouter {
-  // ── Route Names ────────────────────────────────────────────────────────
   static const String splash = 'splash';
   static const String login = 'login';
   static const String home = 'home';
@@ -30,7 +24,6 @@ abstract final class AppRouter {
   static const String profile = 'profile';
   static const String pinDetail = 'pin-detail';
 
-  // ── Route Paths ────────────────────────────────────────────────────────
   static const String splashPath = '/splash';
   static const String loginPath = '/login';
   static const String homePath = '/';
@@ -39,53 +32,40 @@ abstract final class AppRouter {
   static const String profilePath = '/profile';
   static const String pinDetailPath = '/pin/:id';
 
-  // ── Navigator Keys ─────────────────────────────────────────────────────
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
   static final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-  /// The [GoRouter] instance used by [MaterialApp.router].
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: homePath,
     debugLogDiagnostics: true,
-
-    // ── Auth Redirect Guard ──────────────────────────────────────────
     redirect: (BuildContext context, GoRouterState state) {
-      // Check if user is authenticated via Clerk's inherited widget
       bool isAuthenticated;
       try {
         final auth = ClerkAuth.of(context);
         isAuthenticated = auth.user != null;
       } catch (_) {
-        // ClerkAuth not yet available in tree during initial build
         isAuthenticated = false;
       }
 
       final isOnLoginPage = state.matchedLocation == loginPath;
 
-      // Not authenticated and not on login → go to login
       if (!isAuthenticated && !isOnLoginPage) {
         return loginPath;
       }
 
-      // Authenticated but on login → go to home
       if (isAuthenticated && isOnLoginPage) {
         return homePath;
       }
 
-      // No redirect needed
       return null;
     },
-
     routes: [
-      // ── Login Route (full-screen, outside shell) ───────────────────
       GoRoute(
         path: loginPath,
         name: login,
         builder: (context, state) => const LoginScreen(),
       ),
-
-      // ── Pin Detail (full-screen, outside shell for hero animation) ─
       GoRoute(
         path: pinDetailPath,
         name: pinDetail,
@@ -118,8 +98,6 @@ abstract final class AppRouter {
           );
         },
       ),
-
-      // ── Bottom Navigation Shell ──────────────────────────────────────
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) => MainShell(child: child),

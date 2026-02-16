@@ -1,3 +1,7 @@
+/*
+ * Root scaffold with icon-only bottom navigation bar for five Pinterest tabs.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,11 +9,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../profile/presentation/providers/uploaded_pins_provider.dart';
 
-/// Root scaffold with bottom navigation bar.
-///
-/// 5 tabs matching the real Pinterest app:
-/// Home, Search, Create (+), Messages, Profile.
-/// Labels are hidden — icon-only nav bar like the real app.
 class MainShell extends ConsumerWidget {
   const MainShell({super.key, required this.child});
 
@@ -18,7 +17,6 @@ class MainShell extends ConsumerWidget {
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     if (location.startsWith(AppRouter.searchPath)) return 1;
-    // index 2 is Create (no route, shows bottom sheet)
     if (location.startsWith(AppRouter.inboxPath)) return 3;
     if (location.startsWith(AppRouter.profilePath)) return 4;
     return 0;
@@ -86,31 +84,26 @@ class MainShell extends ConsumerWidget {
             alpha: 0.5,
           ),
           items: const [
-            // Home — filled rounded house
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined, size: 28),
               activeIcon: Icon(Icons.home_filled, size: 28),
               label: '',
             ),
-            // Search — magnifying glass
             BottomNavigationBarItem(
               icon: Icon(Icons.search, size: 28),
               activeIcon: Icon(Icons.search, size: 28),
               label: '',
             ),
-            // Create — simple plus
             BottomNavigationBarItem(
               icon: Icon(Icons.add, size: 30),
               activeIcon: Icon(Icons.add, size: 30),
               label: '',
             ),
-            // Messages — speech bubble
             BottomNavigationBarItem(
               icon: Icon(Icons.chat_bubble_outline, size: 26),
               activeIcon: Icon(Icons.chat_bubble, size: 26),
               label: '',
             ),
-            // Profile — person silhouette
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline, size: 28),
               activeIcon: Icon(Icons.person, size: 28),

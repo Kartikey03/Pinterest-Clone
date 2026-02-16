@@ -1,3 +1,7 @@
+/*
+ * Full-screen pin detail view with hero image, photographer info, and similar photos grid.
+ */
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,16 +21,6 @@ import '../providers/saved_pins_provider.dart';
 import '../providers/similar_photos_provider.dart';
 import '../widgets/pin_action_bar.dart';
 
-/// Full-screen pin detail view with hero animation.
-///
-/// Pinterest UX details replicated:
-/// - Hero image transition from grid card
-/// - Full-width high-res image
-/// - Photographer section with avatar and name
-/// - Description / alt text
-/// - "More like this" section with similar photos
-/// - Action bar at bottom (save, share, visit)
-/// - Transparent app bar overlaying the image
 class PinDetailScreen extends ConsumerWidget {
   const PinDetailScreen({super.key, required this.photo});
 
@@ -63,7 +57,6 @@ class PinDetailScreen extends ConsumerWidget {
           ),
         ),
         actions: [
-          // Animated save button in app bar
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: Container(
@@ -85,13 +78,11 @@ class PinDetailScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // ── Scrollable Content ──────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Hero Image ─────────────────────────────────────
                   Hero(
                     tag: 'pin-image-${photo.id}',
                     child: CachedNetworkImage(
@@ -132,8 +123,6 @@ class PinDetailScreen extends ConsumerWidget {
                           ),
                     ),
                   ),
-
-                  // ── Photographer Info ──────────────────────────────
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Row(
@@ -213,8 +202,6 @@ class PinDetailScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-
-                  // ── Description ────────────────────────────────────
                   if (photo.alt.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -222,8 +209,6 @@ class PinDetailScreen extends ConsumerWidget {
                       ),
                       child: Text(photo.alt, style: theme.textTheme.bodyLarge),
                     ),
-
-                  // ── Photo Info ─────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Row(
@@ -243,11 +228,7 @@ class PinDetailScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-
-                  // ── Divider ────────────────────────────────────────
                   const Divider(height: 1),
-
-                  // ── "More like this" Section ───────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.lg,
@@ -262,8 +243,6 @@ class PinDetailScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-
-                  // ── Similar Photos Grid ────────────────────────────
                   similarPhotos.when(
                     loading:
                         () => const Padding(
@@ -318,14 +297,11 @@ class PinDetailScreen extends ConsumerWidget {
                       );
                     },
                   ),
-
                   AppSpacing.gapH32,
                 ],
               ),
             ),
           ),
-
-          // ── Action Bar ──────────────────────────────────────────────
           PinActionBar(photo: photo),
         ],
       ),

@@ -1,7 +1,9 @@
+/*
+ * Custom page transition for pin detail: slide-up with fade.
+ */
+
 import 'package:flutter/material.dart';
 
-/// Custom page transition for pin detail — slides up from bottom
-/// with a fade, matching Pinterest's detail screen entrance.
 class PinDetailPageRoute<T> extends PageRouteBuilder<T> {
   PinDetailPageRoute({required this.child})
     : super(

@@ -1,7 +1,7 @@
-/// Minimal auth user entity for the domain layer.
-///
-/// Decoupled from Clerk's internal models so the domain layer
-/// has zero dependency on any external SDK.
+/*
+ * Minimal auth user entity decoupled from Clerk SDK for the domain layer.
+ */
+
 class AuthUser {
   const AuthUser({
     required this.id,
@@ -17,13 +17,11 @@ class AuthUser {
   final String? lastName;
   final String? imageUrl;
 
-  /// Convenience getter for display name.
   String get displayName {
     final parts = [firstName, lastName].where((p) => p != null && p.isNotEmpty);
     return parts.isNotEmpty ? parts.join(' ') : email;
   }
 
-  /// Returns the user's initials for avatar fallback.
   String get initials {
     if (firstName != null && firstName!.isNotEmpty) {
       final last =
