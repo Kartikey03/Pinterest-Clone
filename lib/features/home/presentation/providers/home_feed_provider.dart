@@ -119,6 +119,17 @@ class HomeFeedNotifier extends StateNotifier<AsyncValue<HomeFeedState>> {
       state = AsyncValue.error(e, st);
     }
   }
+
+  /// Remove a specific photo from the feed (e.g. "See less like this").
+  void removePhoto(int photoId) {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    state = AsyncValue.data(
+      current.copyWith(
+        photos: current.photos.where((p) => p.id != photoId).toList(),
+      ),
+    );
+  }
 }
 
 /// Global provider for the home feed.

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../profile/presentation/providers/uploaded_pins_provider.dart';
 
 /// Root scaffold with bottom navigation bar.
 ///
 /// 5 tabs matching the real Pinterest app:
 /// Home, Search, Create (+), Messages, Profile.
 /// Labels are hidden — icon-only nav bar like the real app.
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   const MainShell({super.key, required this.child});
 
   final Widget child;
@@ -22,7 +24,7 @@ class MainShell extends StatelessWidget {
     return 0;
   }
 
-  void _onTap(BuildContext context, int index) {
+  void _onTap(BuildContext context, WidgetRef ref, int index) {
     switch (index) {
       case 0:
         context.goNamed(AppRouter.home);
@@ -31,7 +33,7 @@ class MainShell extends StatelessWidget {
         context.goNamed(AppRouter.search);
         break;
       case 2:
-        _showCreateSheet(context);
+        _pickAndUpload(context, ref);
         break;
       case 3:
         context.goNamed(AppRouter.inbox);
@@ -42,57 +44,23 @@ class MainShell extends StatelessWidget {
     }
   }
 
-  void _showCreateSheet(BuildContext context) {
-    final theme = Theme.of(context);
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder:
-          (context) => Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.outline,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Icon(
-                  Icons.add_circle_outline,
-                  size: 48,
-                  color: theme.colorScheme.secondary,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Create',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Create pins and boards — coming soon!',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.secondary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
+  void _pickAndUpload(BuildContext context, WidgetRef ref) async {
+    final success =
+        await ref.read(uploadedPinsProvider.notifier).pickAndUpload();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success ? 'Pin uploaded successfully!' : 'Upload cancelled',
           ),
-    );
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = _currentIndex(context);
     final theme = Theme.of(context);
 
@@ -109,7 +77,7 @@ class MainShell extends StatelessWidget {
         ),
         child: BottomNavigationBar(
           currentIndex: currentIndex,
-          onTap: (index) => _onTap(context, index),
+          onTap: (index) => _onTap(context, ref, index),
           type: BottomNavigationBarType.fixed,
           showSelectedLabels: false,
           showUnselectedLabels: false,

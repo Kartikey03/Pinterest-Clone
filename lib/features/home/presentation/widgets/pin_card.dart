@@ -10,6 +10,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../services/cache_service.dart';
 import '../../domain/entities/photo.dart';
 import '../../../pin/presentation/providers/saved_pins_provider.dart';
+import '../providers/home_feed_provider.dart';
 
 /// Individual pin card in the masonry grid.
 ///
@@ -166,9 +167,10 @@ class _PinCardState extends ConsumerState<PinCard>
                   title: const Text('See less like this'),
                   onTap: () {
                     Navigator.pop(ctx);
+                    ref.read(homeFeedProvider.notifier).removePhoto(photo.id);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("We'll show less like this"),
+                        content: Text("Got it — we'll show less like this"),
                         duration: Duration(seconds: 1),
                       ),
                     );

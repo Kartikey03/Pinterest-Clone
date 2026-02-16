@@ -10,15 +10,9 @@ import '../../../home/domain/entities/photo.dart';
 import '../../../pin/presentation/providers/saved_pins_provider.dart';
 import '../providers/home_feed_provider.dart';
 import '../widgets/pin_card.dart';
-import '../widgets/pinterest_refresh_indicator.dart';
 import '../widgets/shimmer_grid.dart';
 
-/// Pinterest-style home feed with "For You" + saved board tabs.
-///
-/// Matches the real Pinterest home screen layout:
-/// - Top: tab row with "For you" + saved board names
-/// - Filter icon at top right
-/// - Masonry grid feed with pull-to-refresh
+/// Pinterest-style home feed with "For You" + "Saved" tabs.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -56,14 +50,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final feedState = ref.watch(homeFeedProvider);
     final savedPins = ref.watch(savedPinsProvider);
-    final boardNames = _getBoardNames(savedPins);
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // ── Tab Row ────────────────────────────────────────────────
-            _buildTabRow(context, boardNames),
+            // ── Tab Row: "For you" + "Saved" ───────────────────────────
+            _buildTabRow(context),
 
             // ── Feed Content ───────────────────────────────────────────
             Expanded(
@@ -74,7 +67,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         loading: () => const ShimmerGrid(),
                         error: (error, _) => _buildErrorView(),
                       )
-                      : _buildBoardFeed(savedPins),
+                      : _buildSavedFeed(savedPins),
             ),
           ],
         ),
@@ -82,24 +75,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// Get unique board names from saved pins.
-  List<String> _getBoardNames(Map<int, Photo> savedPins) {
-    if (savedPins.isEmpty) return [];
-    final pins = savedPins.values.toList();
-    final names = <String>{};
-    for (final pin in pins) {
-      if (pin.alt.isNotEmpty) {
-        final words = pin.alt.split(' ');
-        final name = words.take(2).join(' ');
-        if (name.isNotEmpty) names.add(name);
-      }
-    }
-    return names.take(3).toList();
-  }
-
-  Widget _buildTabRow(BuildContext context, List<String> boardNames) {
+  Widget _buildTabRow(BuildContext context) {
     final theme = Theme.of(context);
-    final tabs = ['For you', ...boardNames];
+    final tabs = ['For you', 'Saved'];
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -108,39 +86,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       child: Row(
         children: [
-          // Tab chips
+          // Tab labels
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(tabs.length, (index) {
-                  final isActive = _activeTabIndex == index;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.md),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _activeTabIndex = index),
-                      child: Text(
-                        tabs[index],
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight:
-                              isActive ? FontWeight.w800 : FontWeight.w500,
-                          color:
-                              isActive
-                                  ? theme.colorScheme.onSurface
-                                  : theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.5,
-                                  ),
-                          fontSize: 16,
-                        ),
+            child: Row(
+              children: List.generate(tabs.length, (index) {
+                final isActive = _activeTabIndex == index;
+                return Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.md),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _activeTabIndex = index),
+                    child: Text(
+                      tabs[index],
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight:
+                            isActive ? FontWeight.w800 : FontWeight.w500,
+                        color:
+                            isActive
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.5,
+                                ),
+                        fontSize: 16,
                       ),
                     ),
-                  );
-                }),
-              ),
+                  ),
+                );
+              }),
             ),
           ),
 
-          // Filter icon (like Pinterest's tune icon)
+          // Filter icon
           IconButton(
             onPressed: () {},
             icon: Icon(
@@ -188,14 +163,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return const Center(child: Text('No photos found'));
     }
 
-    return PinterestRefreshIndicator(
+    return RefreshIndicator(
       onRefresh: () => ref.read(homeFeedProvider.notifier).refresh(),
-      scrollController: _scrollController,
+      color: AppColors.pinterestRed,
       child: CustomScrollView(
         controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
+        physics: const AlwaysScrollableScrollPhysics(),
         cacheExtent: 500,
         slivers: [
           SliverPadding(
@@ -235,7 +208,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildBoardFeed(Map<int, Photo> savedPins) {
+  Widget _buildSavedFeed(Map<int, Photo> savedPins) {
     final photos = savedPins.values.toList().reversed.toList();
 
     if (photos.isEmpty) {
@@ -254,6 +227,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            AppSpacing.gapH8,
+            Text(
+              'Tap the save icon on any pin to save it',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
             ),
           ],
         ),
